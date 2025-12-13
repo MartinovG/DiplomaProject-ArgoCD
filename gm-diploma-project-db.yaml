@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: diploma-prod-db
+  name: gm-diploma-project-db
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/GabrielMartinov/diplomaproject-argocd.git
+    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
     targetRevision: main
     path: eu-central-1/prod/databases 
   destination:
