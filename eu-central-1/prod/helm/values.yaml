@@ -23,7 +23,7 @@ helm:
         port: 4000
       ingressPath: /api
       env:
-        DATABASE_URL: "postgresql://postgres:password123@preview-db-postgresql.default.svc.cluster.local:5432/preview_db"
+        DATABASE_URL: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
         NODE_ENV: "production"
         CORS_ORIGIN: "https://elsys.itgix.eu"
 
