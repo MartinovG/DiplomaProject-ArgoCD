@@ -1,8 +1,8 @@
 apiVersion: rds.services.k8s.aws/v1alpha1
 kind: DBInstance
 metadata:
-  name: gm-diploma-poject-db
-  namespace: default
+  name: gm-diploma-project-db
+  namespace: db
 spec:
   engine: postgres
   engineVersion: "17.6"
