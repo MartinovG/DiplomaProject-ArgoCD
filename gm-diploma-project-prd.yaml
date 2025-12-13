@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: diploma-production
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
+    targetRevision: main
+    path: eu-central-1/prod/helm
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gm-diploma-project-prod
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true
