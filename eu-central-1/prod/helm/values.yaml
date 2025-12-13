@@ -1,4 +1,4 @@
-helm:
+app:
   global:
     name: gm-diploma-project
     namespace: default
