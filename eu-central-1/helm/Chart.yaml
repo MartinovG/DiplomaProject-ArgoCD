@@ -1,0 +1,6 @@
+apiVersion: v2
+name: helm        
+description: A generic Shared Library Chart for Diploma Project
+type: library       
+version: 0.1.0
+appVersion: "1.0.0"
