@@ -1,0 +1,34 @@
+{{- range $appName, $appConfig := .Values.apps }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $appName }}
+  namespace: {{ $.Values.global.namespace | default "default" }}
+  labels:
+    app: {{ $appName }}
+spec:
+  replicas: {{ $appConfig.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      serviceAccountName: {{ $.Values.global.serviceAccountName }}
+      containers:
+        - name: app
+          image: "{{ $appConfig.image.repository }}:{{ $appConfig.image.tag }}"
+          imagePullPolicy: {{ $appConfig.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - containerPort: {{ $appConfig.containerPort }}
+          env:
+            {{- range $key, $val := $appConfig.env }}
+            - name: {{ $key }}
+              value: "{{ $val }}"
+            {{- end }}
+          resources:
+            {{- toYaml ($appConfig.resources | default dict) | nindent 12 }}
+{{- end }}

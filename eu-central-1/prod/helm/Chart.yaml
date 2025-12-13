@@ -1,0 +1,8 @@
+apiVersion: v2
+name: gm-DiplomaProject-prod
+description: A Helm chart for gm-DiplomaProject production environment
+version: 0.1.0
+dependencies:
+  - name: helm
+    version: 0.1.0
+    repository: "file://../../helm"
