@@ -17,7 +17,7 @@ spec:
     name: gm-diploma-prod-db-secret
     key: password
     
-  dbName: gm-diploma-poject-db
+  dbName: gmdiplomapojectdb
   publiclyAccessible: false
 
   dbSubnetGroupName: "gm-diploma-project-vpc" 
