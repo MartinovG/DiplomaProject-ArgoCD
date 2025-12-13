@@ -1,0 +1,40 @@
+helm:
+  global:
+    name: gm-diploma-project
+    namespace: default
+    serviceAccountName: gm-diploma-project-sa
+    ingress:
+      enabled: true
+      className: alb
+      host: elsys.itgix.eu
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+
+  apps:
+    backend:
+      replicaCount: 2
+      containerPort: 4000
+      image:
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        tag: backend-v1
+      service:
+        port: 4000
+      ingressPath: /api
+      env:
+        DATABASE_URL: "postgresql://postgres:password123@preview-db-postgresql.default.svc.cluster.local:5432/preview_db"
+        NODE_ENV: "production"
+        CORS_ORIGIN: "https://elsys.itgix.eu"
+
+    frontend:
+      replicaCount: 2
+      containerPort: 3000
+      image:
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        tag: frontend-v1
+      service:
+        port: 80
+      ingressPath: /
+      env:
+        NEXT_PUBLIC_API_URL: "/api"

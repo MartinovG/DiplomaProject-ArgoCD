@@ -1,0 +1,26 @@
+apiVersion: rds.services.k8s.aws/v1alpha1
+kind: DBInstance
+metadata:
+  name: gm-diploma-poject-db
+  namespace: default
+spec:
+  engine: postgres
+  engineVersion: "14.10"
+  dbInstanceClass: db.t4g.micro 
+  allocatedStorage: 20
+  storageType: gp3
+  dbInstanceIdentifier: gm-diploma-poject-db
+  masterUsername: postgres
+  
+  masterUserPassword:
+    namespace: default
+    name: gm-diploma-prod-db-secret
+    key: password
+    
+  dbName: gm-diploma-poject-db
+  publiclyAccessible: false
+
+  dbSubnetGroupName: "gm-diploma-project-vpc" 
+
+  vpcSecurityGroupIDs: 
+    - "sg-096326fdccbe87f80"
