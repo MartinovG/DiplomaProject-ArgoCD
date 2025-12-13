@@ -5,7 +5,7 @@ metadata:
   namespace: default
 spec:
   engine: postgres
-  engineVersion: "14.10"
+  engineVersion: "17.6"
   dbInstanceClass: db.t4g.micro 
   allocatedStorage: 20
   storageType: gp3
