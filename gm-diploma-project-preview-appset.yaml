@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gm-diploma-preview-appset
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - pullRequest:
+      github:
+        owner: MartinovG
+        repo: DiplomaProject-App
+        tokenRef:
+          secretName: github-token
+          key: token
+      requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'gm-diploma-pr-{{.number}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/MartinovG/DiplomaProject-ArgoCD.git'
+        targetRevision: main
+        path: eu-central-1/helm
+        helm:
+          parameters:
+            - name: "global.ingress.host"
+              value: "pr-{{.number}}.elsys.itgix.eu"
+            - name: "global.namespace"
+              value: "pr-{{.number}}"
+            - name: "global.name"
+              value: "pr-{{.number}}"
+            - name: "apps.backend.image.tag"
+              value: "backend-pr-{{.number}}"
+            - name: "apps.frontend.image.tag"
+              value: "frontend-pr-{{.number}}"
+            - name: "apps.backend.env.CORS_ORIGIN"
+              value: "https://pr-{{.number}}.elsys.itgix.eu"
+      
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'pr-{{.number}}'
+      
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
