@@ -4,16 +4,17 @@ metadata:
   name: default
 spec:
   amiFamily: AL2023
+  
   role: "controllers-eks-node-group-20251205141631556200000001"
 
   subnetSelectorTerms:
     - tags:
-        karpenter.sh/discovery: "gmDiplomaProject"
-
+        "Tier": "private"
+    
   securityGroupSelectorTerms:
     - tags:
-        karpenter.sh/discovery: "gmDiplomaProject"
-
+        Name: "*gmDiplomaProject*"
+        
   amiSelectorTerms:
     - alias: al2023@latest
 
