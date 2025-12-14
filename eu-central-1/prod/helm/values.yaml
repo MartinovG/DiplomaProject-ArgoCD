@@ -23,7 +23,7 @@ app:
         port: 4000
       ingressPath: /api
       env:
-        DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/diplomaprojectdb"
+        DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/gmdiplomaprojectdb"
         NODE_ENV: "production"
         CORS_ORIGIN: "https://gmdiplomaproject.elsys.itgix.eu"
 
