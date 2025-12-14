@@ -6,7 +6,7 @@ app:
     ingress:
       enabled: true
       className: alb
-      host: elsys.itgix.eu
+      host: gmdiplomaproject.elsys.itgix.eu
       annotations:
         alb.ingress.kubernetes.io/scheme: internet-facing
         alb.ingress.kubernetes.io/target-type: ip
