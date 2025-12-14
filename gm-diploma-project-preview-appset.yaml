@@ -23,7 +23,7 @@ spec:
       source:
         repoURL: 'https://github.com/MartinovG/DiplomaProject-ArgoCD.git'
         targetRevision: main
-        path: eu-central-1/helm
+        path: eu-central-1/preview/helm
         helm:
           parameters:
             - name: "global.ingress.host"
