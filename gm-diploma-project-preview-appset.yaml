@@ -25,8 +25,6 @@ spec:
         targetRevision: main
         path: eu-central-1/helm
         helm:
-          valueFiles:
-            - ../prod/helm/values.yaml
           parameters:
             - name: "global.ingress.host"
               value: "pr-{{.number}}.elsys.itgix.eu"
