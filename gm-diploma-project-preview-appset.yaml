@@ -26,17 +26,22 @@ spec:
         path: eu-central-1/preview/helm
         helm:
           parameters:
-            - name: "global.ingress.host"
+            - name: "app.global.ingress.host"
               value: "pr-{{.number}}.elsys.itgix.eu"
-            - name: "global.namespace"
+            
+            - name: "app.global.namespace"
               value: "pr-{{.number}}"
-            - name: "global.name"
+            
+            - name: "app.global.name"
               value: "pr-{{.number}}"
-            - name: "apps.backend.image.tag"
+            
+            - name: "app.apps.backend.image.tag"
               value: "backend-pr-{{.number}}"
-            - name: "apps.frontend.image.tag"
+            
+            - name: "app.apps.frontend.image.tag"
               value: "frontend-pr-{{.number}}"
-            - name: "apps.backend.env.CORS_ORIGIN"
+            
+            - name: "app.apps.backend.env.CORS_ORIGIN"
               value: "https://pr-{{.number}}.elsys.itgix.eu"
       
       destination:

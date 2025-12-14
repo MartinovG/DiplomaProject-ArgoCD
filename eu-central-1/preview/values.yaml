@@ -1,39 +1,40 @@
-global:
-  name: gm-diploma-project
-  namespace: default
-  serviceAccountName: gm-diploma-project-sa
-  ingress:
-    enabled: true
-    className: alb
-    host: gmdiplomaproject.elsys.itgix.eu
-    annotations:
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+app:
+  global:
+    name: gm-diploma-project
+    namespace: default
+    serviceAccountName: gm-diploma-project-sa
+    ingress:
+      enabled: true
+      className: alb
+      host: preview.elsys.itgix.eu
+      annotations:
+        alb.ingress.kubernetes.io/scheme: internet-facing
+        alb.ingress.kubernetes.io/target-type: ip
+        alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
 
-apps:
-  backend:
-    replicaCount: 2
-    containerPort: 4000
-    image:
-      repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
-      tag: backend-sha-3aa2d362cea1b218d15745026571b39601c5c41a
-    service:
-      port: 4000
-    ingressPath: /api
-    env:
-      DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/gmdiplomaprojectdb"
-      NODE_ENV: "production"
-      CORS_ORIGIN: "https://gmdiplomaproject.elsys.itgix.eu"
+  apps:
+    backend:
+      replicaCount: 1 
+      containerPort: 4000
+      image:
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        tag: latest 
+      service:
+        port: 4000
+      ingressPath: /api
+      env:
+        DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/gmdiplomaprojectdb"
+        NODE_ENV: "production"
+        CORS_ORIGIN: "https://preview.elsys.itgix.eu" 
 
-  frontend:
-    replicaCount: 2
-    containerPort: 3000
-    image:
-      repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
-      tag: frontend-sha-3aa2d362cea1b218d15745026571b39601c5c41a
-    service:
-      port: 80
-    ingressPath: /
-    env:
-      NEXT_PUBLIC_API_URL: "/api"
+    frontend:
+      replicaCount: 1
+      containerPort: 3000
+      image:
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        tag: latest 
+      service:
+        port: 80
+      ingressPath: /
+      env:
+        NEXT_PUBLIC_API_URL: "/api"
