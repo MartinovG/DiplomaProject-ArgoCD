@@ -1,0 +1,8 @@
+apiVersion: v2
+name: gm-DiplomaProject-preview
+description: A Helm chart for gm-DiplomaProject preview
+version: 0.1.0
+dependencies:
+  - name: app
+    version: 0.1.0
+    repository: "file://../../helm"
