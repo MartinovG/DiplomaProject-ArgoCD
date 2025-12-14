@@ -12,8 +12,7 @@ spec:
         "Tier": "private"
     
   securityGroupSelectorTerms:
-    - tags:
-        Name: "*gmDiplomaProject*"
+    - id: "sg-096326fdccbe87f80"
         
   amiSelectorTerms:
     - alias: al2023@latest
