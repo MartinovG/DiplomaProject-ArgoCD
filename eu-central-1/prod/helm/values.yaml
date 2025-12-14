@@ -25,7 +25,7 @@ app:
       env:
         DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/diplomaprojectdb"
         NODE_ENV: "production"
-        CORS_ORIGIN: "https://elsys.itgix.eu"
+        CORS_ORIGIN: "https://gmdiplomaproject.lsys.itgix.eu"
 
     frontend:
       replicaCount: 2
