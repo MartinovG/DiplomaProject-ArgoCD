@@ -4,16 +4,19 @@ metadata:
   name: default
 spec:
   amiFamily: AL2023
-  
+
+  # ✅ Correct: Provide the Role Name. 
+  # Karpenter will see this, and because of your Terraform setting, 
+  # it will auto-create the Instance Profile for it.
   role: "controllers-eks-node-group-20251205141631556200000001"
 
   subnetSelectorTerms:
     - tags:
         "Tier": "private"
-    
+
   securityGroupSelectorTerms:
     - id: "sg-096326fdccbe87f80"
-        
+
   amiSelectorTerms:
     - alias: al2023@latest
 
