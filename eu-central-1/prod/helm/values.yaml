@@ -1,7 +1,7 @@
 app: 
   global:
     name: gm-diploma-project
-    namespace: default
+    namespace: gm-diploma-project-prod
     serviceAccountName: gm-diploma-project-sa
     ingress:
       enabled: true
