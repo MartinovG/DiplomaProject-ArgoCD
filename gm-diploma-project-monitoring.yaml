@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-monitoring
+spec:
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  destination:
+    namespace: monitoring
+    name: in-cluster
+  source:
+    path: eu-central-1/prod/monitoring
+    directory:
+      recurse: true
+    repoURL: https://github.com/gabrielmartinov/DiplomaProject-ArgoCD.git
+    targetRevision: main
+  project: gm-diploma-project

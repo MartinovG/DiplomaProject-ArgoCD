@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+spec:
+  project: gm-diploma-project
+  source:
+    repoURL: "https://grafana.github.io/helm-charts"
+    chart: k8s-monitoring
+    targetRevision: "3.5.2"
+    helm:
+      parameters:
+        - name: cluster.name
+          value: "gmDiplomaProject"
+        - name: clusterMetrics.enabled
+          value: "true"
+        - name: clusterEvents.enabled
+          value: "true"
+        - name: nodeLogs.enabled
+          value: "true"
+        - name: podLogs.enabled
+          value: "true"
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
