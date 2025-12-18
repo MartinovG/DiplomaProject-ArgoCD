@@ -13,6 +13,6 @@ spec:
     path: eu-central-1/prod/monitoring
     directory:
       recurse: true
-    repoURL: https://github.com/gabrielmartinov/DiplomaProject-ArgoCD.git
+    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
     targetRevision: main
   project: default
