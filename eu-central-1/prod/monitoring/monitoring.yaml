@@ -2,24 +2,40 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: monitoring
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: "https://grafana.github.io/helm-charts"
-    chart: k8s-monitoring
-    targetRevision: "3.5.2"
+    repoURL: "https://prometheus-community.github.io/helm-charts"
+    chart: kube-prometheus-stack
+    targetRevision: "80.4.2"
     helm:
-      parameters:
-        - name: cluster.name
-          value: "gmDiplomaProject"
-        - name: clusterMetrics.enabled
-          value: "true"
-        - name: clusterEvents.enabled
-          value: "true"
-        - name: nodeLogs.enabled
-          value: "true"
-        - name: podLogs.enabled
-          value: "true"
+      values: |
+        grafana:
+          ingress:
+            enabled: true
+            ingressClassName: alb
+            hosts: ["grafana-gmdiplomaproject.elsys.itgix.eu"]
+            annotations:
+              alb.ingress.kubernetes.io/scheme: internet-facing
+              alb.ingress.kubernetes.io/target-type: ip
+              alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+              alb.ingress.kubernetes.io/ssl-redirect: "443"
+          persistence:
+            enabled: true
+            size: 10Gi
+        prometheus:
+          prometheusSpec:
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 20Gi
+
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring

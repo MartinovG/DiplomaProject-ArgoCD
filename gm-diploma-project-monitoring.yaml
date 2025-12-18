@@ -2,17 +2,18 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: gm-diploma-project-monitoring
+  namespace: monitoring
 spec:
-  syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-  destination:
-    namespace: monitoring
-    name: in-cluster
+  project: default
   source:
+    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
+    targetRevision: main
     path: eu-central-1/prod/monitoring
     directory:
       recurse: true
-    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
-    targetRevision: main
-  project: default
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
