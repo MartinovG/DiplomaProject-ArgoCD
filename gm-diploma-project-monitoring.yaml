@@ -15,4 +15,4 @@ spec:
       recurse: true
     repoURL: https://github.com/gabrielmartinov/DiplomaProject-ArgoCD.git
     targetRevision: main
-  project: gm-diploma-project
+  project: default
