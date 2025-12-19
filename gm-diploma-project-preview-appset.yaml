@@ -18,8 +18,6 @@ spec:
   template:
     metadata:
       name: 'gm-diploma-pr-{{.number}}'
-      finalizers:
-        - resources-finalizer.argocd.argoproj.io
     spec:
       project: default
       source:
