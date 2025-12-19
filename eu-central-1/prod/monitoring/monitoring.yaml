@@ -26,6 +26,7 @@ spec:
           persistence:
             enabled: true
             size: 10Gi
+
         prometheus:
           prometheusSpec:
             storageSpec:
@@ -55,11 +56,10 @@ spec:
             - name: 'null'
             - name: 'discord-notifications'
               discord_configs:
-              - webhook_url: 'https://discord.com/api/webhooks/1451503113004646501/Vuun5MbTNHjUoaiF1Q4nr0oH5macpIqa-s0AhlMfWmoI1wdZ_OuU5tvOKzgy-3F7Y3v3' 
+              - webhook_url: 'https://discord.com/api/webhooks/1451569209124585634/Wjt2r2gmcXDRJKzbEllMa9SqHL1_uNmShXFId7zGvXEJxTGW1IG5PHAZjR5MOqdc3h8T' 
                 send_resolved: true
-                title: '{{ template "slack.default.title" . }}'
-                message: '{{ template "slack.default.text" . }}'
-
+                title: 'Prometheus Alert: {{ .Status }}'
+                message: 'Alert details: {{ .CommonAnnotations.summary }}'
 
   destination:
     server: 'https://kubernetes.default.svc'
