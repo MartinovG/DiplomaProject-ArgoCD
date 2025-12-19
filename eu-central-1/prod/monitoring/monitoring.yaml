@@ -56,7 +56,7 @@ spec:
             - name: 'null'
             - name: 'discord-notifications'
               discord_configs:
-              - webhook_url: 'https://discord.com/api/webhooks/1451569209124585634/Wjt2r2gmcXDRJKzbEllMa9SqHL1_uNmShXFId7zGvXEJxTGW1IG5PHAZjR5MOqdc3h8T' 
+              - webhook_url: 'https://discord.com/api/webhooks/1451569209124585634/Wjt2r2gmcXDRJKzbEllMa9SqHL1_uNmShXFId7zGvXEJxTGW1IG5PHAZjR5MOqdc3h8T
                 send_resolved: true
                 title: 'Prometheus Alert: {{ .Status }}'
                 message: 'Alert details: {{ .CommonAnnotations.summary }}'
