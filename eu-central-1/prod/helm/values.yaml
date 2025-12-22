@@ -49,4 +49,5 @@ app:
         port: 80
       ingressPath: /
       env:
-        NEXT_PUBLIC_API_URL: "/api"
+        - name: NEXT_PUBLIC_API_URL
+          value: "/api"
