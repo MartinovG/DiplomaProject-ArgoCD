@@ -23,4 +23,4 @@ spec:
   dbSubnetGroupName: "gm-diploma-project-vpc" 
 
   vpcSecurityGroupIDs: 
-    - "gm-diploma-project-vpc"
+    - "sg-0cc86ccfeeeec062f"
