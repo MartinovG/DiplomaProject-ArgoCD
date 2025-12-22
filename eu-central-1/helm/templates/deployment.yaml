@@ -25,9 +25,8 @@ spec:
           ports:
             - containerPort: {{ $appConfig.containerPort }}
           env:
-            {{- range $key, $val := $appConfig.env }}
-            - name: {{ $key }}
-              value: "{{ $val }}"
+            {{- with $appConfig.env }}
+            {{- toYaml . | nindent 12 }}
             {{- end }}
           resources:
             {{- toYaml ($appConfig.resources | default dict) | nindent 12 }}
