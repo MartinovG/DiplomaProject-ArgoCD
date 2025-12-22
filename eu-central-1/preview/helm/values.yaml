@@ -23,9 +23,22 @@ app:
         port: 4000
       ingressPath: /api
       env:
-        DATABASE_URL: "postgresql://postgres:YourSuperSecurePassword123@gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com:5432/gmdiplomaprojectdb"
-        NODE_ENV: "production"
-        CORS_ORIGIN: "https://preview.elsys.itgix.eu" 
+  - name: DB_HOST
+    value: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
+  - name: DB_PORT
+    value: "5432"
+  - name: DB_NAME
+    value: "gmdiplomaprojectdb"
+  - name: DB_USER
+    value: "postgres"
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: gm-diploma-prod-db-secret  # <--- The secret we just copied!
+        key: password
+  # Now, combine them securely inside the container:
+  - name: DATABASE_URL
+    value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
 
     frontend:
       replicaCount: 1
