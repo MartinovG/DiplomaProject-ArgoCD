@@ -1,3 +1,4 @@
+#before creation on new cluster add password to secrets
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
