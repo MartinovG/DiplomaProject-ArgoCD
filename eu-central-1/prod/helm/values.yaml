@@ -23,7 +23,6 @@ app:
         port: 4000
       ingressPath: /api
       env:
-  env:
         - name: DB_HOST
           value: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
         - name: DB_PORT
@@ -39,7 +38,7 @@ app:
               key: password
         - name: DATABASE_URL
           value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
-          
+
     frontend:
       replicaCount: 2
       containerPort: 3000
