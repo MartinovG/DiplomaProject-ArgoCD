@@ -28,6 +28,10 @@ spec:
             {{- with $appConfig.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+            {{- if $.Values.app.global.corsOrigin }}
+            - name: CORS_ORIGIN
+              value: {{ $.Values.app.global.corsOrigin | quote }}
+            {{- end }}
           resources:
             {{- toYaml ($appConfig.resources | default dict) | nindent 12 }}
 {{- end }}
