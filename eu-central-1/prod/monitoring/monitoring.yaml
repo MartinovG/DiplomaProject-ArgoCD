@@ -14,7 +14,7 @@ spec:
     helm:
       values: |
         grafana:
-        adminPassword: "pass1234"
+          adminPassword: "pass1234"
           ingress:
             enabled: true
             ingressClassName: alb
