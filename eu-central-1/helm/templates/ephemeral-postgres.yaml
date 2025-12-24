@@ -19,7 +19,7 @@ spec:
           image: postgres:17-alpine
           env:
             - name: POSTGRES_DB
-              value: "{{ .Values.postgres.dbName | quote }}"
+              value: {{ .Values.postgres.dbName | quote }}
             - name: POSTGRES_USER
               value: "postgres"
             - name: POSTGRES_PASSWORD
