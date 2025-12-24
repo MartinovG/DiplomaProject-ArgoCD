@@ -1,4 +1,7 @@
 app: 
+  postgres:
+    enabled: false
+
   global:
     name: gm-diploma-project
     namespace: gm-diploma-project-prod
