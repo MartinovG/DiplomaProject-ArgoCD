@@ -1,7 +1,7 @@
-postgres:
-  enabled: true
-
 app:
+  postgres:
+    enabled: true
+
   global:
     name: gm-diploma-project
     namespace: default

@@ -46,8 +46,8 @@ spec:
             - name: "app.apps.frontend.image.tag"
               value: "frontend-pr-{{.number}}"
             
-            - name: "app.apps.backend.env.CORS_ORIGIN"
-              value: "https://pr-{{.number}}.elsys.itgix.eu"
+            # - name: "app.apps.backend.env.CORS_ORIGIN"
+            #   value: "https://pr-{{.number}}.elsys.itgix.eu"
       
       destination:
         server: https://kubernetes.default.svc
