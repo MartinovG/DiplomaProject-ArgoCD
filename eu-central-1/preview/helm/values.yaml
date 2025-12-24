@@ -35,10 +35,7 @@ app:
         - name: DB_USER
           value: "postgres"
         - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: gm-diploma-prod-db-secret
-              key: password
+          value: "password"
         - name: DATABASE_URL
           value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
 
