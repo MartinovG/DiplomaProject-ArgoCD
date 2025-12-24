@@ -34,6 +34,9 @@ spec:
             - name: "app.global.namespace"
               value: "pr-{{.number}}"
             
+            - name: "app.postgres.dbName"
+              value: "gm-diplomaproject-db-pr-{{.number}}"
+
             - name: "app.global.name"
               value: "pr-{{.number}}"
             

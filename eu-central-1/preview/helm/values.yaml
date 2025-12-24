@@ -1,3 +1,6 @@
+postgres:
+  enabled: true
+
 app:
   global:
     name: gm-diploma-project
@@ -24,7 +27,7 @@ app:
       ingressPath: /api
       env:
         - name: DB_HOST
-          value: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
+          value: "postgres"
         - name: DB_PORT
           value: "5432"
         - name: DB_NAME
