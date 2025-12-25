@@ -15,6 +15,12 @@ spec:
       values: |
         grafana:
           adminPassword: "pass1234"
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              url: http://gm-diploma-project-loki.monitoring.svc.cluster.local:3100
+              access: proxy
+              isDefault: false
           ingress:
             enabled: true
             ingressClassName: alb

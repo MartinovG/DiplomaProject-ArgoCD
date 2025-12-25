@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-loki
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: "https://grafana.github.io/helm-charts"
+    chart: loki-stack
+    targetRevision: "2.10.2"
+    helm:
+      values: |
+        loki:
+          persistence:
+            enabled: true
+            size: 10Gi
+        promtail:
+          enabled: true
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true
