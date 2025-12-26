@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-alloy
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: "https://grafana.github.io/helm-charts"
+    chart: alloy
+    targetRevision: "1.5.1"
+    helm:
+      values: |
+        controller:
+          type: daemonset
+
+        mounts:
+          varlog: true
+          dockercontainers: true
+          
+        alloy:
+          config: |
+            discovery.kubernetes "pods" {
+              role = "pod"
+            }
+
+            discovery.relabel "pod_logs" {
+              targets = discovery.kubernetes.pods.targets
+
+              rule {
+                source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+                separator     = ";"
+                regex         = "(.+);(.+);(.+);(.+)"
+                replacement   = "/var/log/pods/${1}_${2}_${3}/${4}/*.log"
+                target_label  = "__path__"
+              }
+
+              rule { source_labels = ["__meta_kubernetes_namespace"]; target_label = "namespace" }
+              rule { source_labels = ["__meta_kubernetes_pod_label_app"]; target_label = "app" }
+              rule { source_labels = ["__meta_kubernetes_pod_name"]; target_label = "pod" }
+              rule { source_labels = ["__meta_kubernetes_pod_container_name"]; target_label = "container" }
+            }
+
+            local.file_match "pod_logs" {
+              path_targets = discovery.relabel.pod_logs.output
+            }
+
+            loki.source.file "pod_logs" {
+              targets    = local.file_match.pod_logs.targets
+              forward_to = [loki.write.endpoint.receiver]
+            }
+
+            loki.write "endpoint" {
+              endpoint {
+                url = "http://gm-diploma-project-loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+              }
+            }
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
