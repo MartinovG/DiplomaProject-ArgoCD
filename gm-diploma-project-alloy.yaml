@@ -26,7 +26,6 @@ spec:
             discovery.relabel "pod_logs" {
               targets = discovery.kubernetes.all_pods.targets
               
-
               rule {
                 source_labels = ["__meta_kubernetes_namespace"]
                 target_label  = "namespace"
@@ -38,13 +37,13 @@ spec:
               }
 
               rule {
-                source_labels = ["__meta_kubernetes_pod_container_name"]
-                target_label  = "container"
+                source_labels = ["__meta_kubernetes_pod_label_app"]
+                target_label  = "app"
               }
 
               rule {
-                source_labels = ["__meta_kubernetes_pod_label_app"]
-                target_label  = "app"
+                source_labels = ["__meta_kubernetes_pod_container_name"]
+                target_label  = "container"
               }
             }
 
