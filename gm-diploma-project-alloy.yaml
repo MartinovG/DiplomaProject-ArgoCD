@@ -19,11 +19,17 @@ spec:
         serviceAccount:
           create: true
 
+        global:
+          podSecurityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            fsGroup: 0
+
         alloy:
           mounts:
             varlog: true
             dockercontainers: true
-
+          
           securityContext:
             privileged: true
             runAsUser: 0
