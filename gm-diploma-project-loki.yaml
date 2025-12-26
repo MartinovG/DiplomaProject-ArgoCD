@@ -15,6 +15,8 @@ spec:
 
         rbac:
           create: true
+        serviceAccount:
+          create: true
 
         loki:
           auth_enabled: false
@@ -36,19 +38,21 @@ spec:
             runAsGroup: 10001
             runAsUser: 10001
 
+        singleBinary:
+          replicas: 1
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClass: gp3
+
         alloy:
           enabled: true
-          # Enable RBAC for the collector
-          rbac:
-            create: true
           controller:
             type: daemonset
-
+          mounts:
+            varlog: true
+            dockercontainers: true
           alloy:
-            mounts:
-              varlog: true
-              dockercontainers: true
-            
             config: |
               discovery.kubernetes "pods" {
                 role = "pod"
@@ -57,7 +61,7 @@ spec:
               discovery.relabel "pod_logs" {
                 targets = discovery.kubernetes.pods.targets
                 
-                # 1. Construct the log path
+                # Standard EKS log path construction
                 rule {
                   source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
                   separator     = ";"
@@ -66,14 +70,12 @@ spec:
                   target_label  = "__path__"
                 }
 
-                # 2. Promote labels for Grafana
                 rule { source_labels = ["__meta_kubernetes_namespace"]; target_label = "namespace" }
-                rule { source_labels = ["__meta_kubernetes_pod_name"]; target_label = "pod" }
                 rule { source_labels = ["__meta_kubernetes_pod_label_app"]; target_label = "app" }
+                rule { source_labels = ["__meta_kubernetes_pod_name"]; target_label = "pod" }
                 rule { source_labels = ["__meta_kubernetes_pod_container_name"]; target_label = "container" }
               }
 
-              # 3. Read the files
               local.file_match "pod_logs" {
                 path_targets = discovery.relabel.pod_logs.output
               }
@@ -91,15 +93,19 @@ spec:
 
         gateway:
           enabled: true
+
         promtail:
           enabled: false
-
         read:
           replicas: 0
         write:
           replicas: 0
         backend:
           replicas: 0
+        resultsCache:
+          enabled: false
+        chunksCache:
+          enabled: false
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
@@ -107,3 +113,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
