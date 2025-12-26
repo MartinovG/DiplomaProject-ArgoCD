@@ -16,12 +16,6 @@ spec:
         controller:
           type: daemonset
 
-        global:
-          podSecurityContext:
-            runAsUser: 0
-            runAsGroup: 0
-            fsGroup: 0
-
         serviceAccount:
           create: true
 
