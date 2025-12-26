@@ -21,15 +21,8 @@ spec:
 
         alloy:
           mounts:
-            extra:
-              - name: varlog
-                mountPath: /var/log
-                hostPath: /var/log
-                readOnly: true
-              - name: varlibdockercontainers
-                mountPath: /var/lib/docker/containers
-                hostPath: /var/lib/docker/containers
-                readOnly: true
+            varlog: true
+            dockercontainers: true
 
           config: |
             discovery.kubernetes "all_pods" {
