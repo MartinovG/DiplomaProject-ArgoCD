@@ -35,12 +35,12 @@ spec:
             type: daemonset
           alloy:
             config: |
-              discovery.kubernetes "pods" {
+              discovery.kubernetes "all_pods" {
                 role = "pod"
               }
 
               discovery.relabel "pod_logs" {
-                targets = discovery.kubernetes.pods.targets
+                targets = discovery.kubernetes.all_pods.targets
                 rule {
                   source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
                   separator     = ";"
@@ -57,6 +57,10 @@ spec:
                   target_label  = "app"
                 }
                 rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  target_label  = "pod"
+                }
+                rule {
                   source_labels = ["__meta_kubernetes_pod_container_name"]
                   target_label  = "container"
                 }
@@ -69,7 +73,7 @@ spec:
 
               loki.write "endpoint" {
                 endpoint {
-                  url = "http://{{ include \"loki.fullname\" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local/loki/api/v1/push"
+                  url = "http://gm-diploma-project-loki-stack-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
                 }
               }
 
