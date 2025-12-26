@@ -23,6 +23,17 @@ spec:
           varlog: true
           dockercontainers: true
           
+        podSecurityContext:
+          runAsUser: 0
+          fsGroup: 0
+          runAsGroup: 0
+
+        securityContext:
+          privileged: true
+          runAsUser: 0
+          capabilities:
+            add: ["SYS_ADMIN"]
+        
         alloy:
           configMap:
             content: |
