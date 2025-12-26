@@ -3,28 +3,37 @@ kind: Application
 metadata:
   name: gm-diploma-project-loki
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: "https://grafana.github.io/helm-charts"
-    chart: loki-stack
-    targetRevision: "2.10.3"
+    chart: loki
+    targetRevision: "6.24.0"
     helm:
       values: |
+        deploymentMode: SingleBinary
         loki:
+          auth_enabled: false
+          commonConfig:
+            replication_factor: 1
+          storage:
+            type: 'filesystem'
+        singleBinary:
+          replicas: 1
           persistence:
-            enabled: true
             size: 10Gi
-        promtail:
-          enabled: true
+        gateway:
+          enabled: false
+        resultsCache:
+          enabled: false
+        chunksCache:
+          enabled: false
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
   syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

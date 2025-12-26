@@ -18,9 +18,17 @@ spec:
           additionalDataSources:
             - name: Loki
               type: loki
+              uid: loki-ds-01
               url: http://gm-diploma-project-loki.monitoring.svc.cluster.local:3100
               access: proxy
               isDefault: false
+              jsonData:
+                maxLines: 1000
+                derivedFields:
+                  - datasourceUid: loki-ds-01
+                    matcherRegex: "traceID=(\\w+)"
+                    name: TraceID
+                    url: "$${__value.raw}"
           ingress:
             enabled: true
             ingressClassName: alb
