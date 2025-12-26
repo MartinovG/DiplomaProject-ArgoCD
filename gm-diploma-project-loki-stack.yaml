@@ -34,6 +34,8 @@ spec:
 
         alloy:
           enabled: true
+          rbac:
+            create: true
           controller:
             type: daemonset
           mounts:
