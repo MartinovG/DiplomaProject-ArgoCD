@@ -41,10 +41,10 @@ spec:
                   target_label  = "__path__"
                 }
 
-                rule { source_labels = ["__meta_kubernetes_namespace"]; target_label = "namespace" }
-                rule { source_labels = ["__meta_kubernetes_pod_label_app"]; target_label = "app" }
-                rule { source_labels = ["__meta_kubernetes_pod_name"]; target_label = "pod" }
-                rule { source_labels = ["__meta_kubernetes_pod_container_name"]; target_label = "container" }
+                rule { source_labels = ["__meta_kubernetes_namespace"], target_label = "namespace" }
+                rule { source_labels = ["__meta_kubernetes_pod_label_app"], target_label = "app" }
+                rule { source_labels = ["__meta_kubernetes_pod_name"], target_label = "pod" }
+                rule { source_labels = ["__meta_kubernetes_pod_container_name"], target_label = "container" }
               }
 
               local.file_match "pod_logs" {
