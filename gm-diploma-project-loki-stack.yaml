@@ -25,6 +25,9 @@ spec:
                 store: tsdb
                 object_store: filesystem
                 schema: v13
+                index:
+                  prefix: index_
+                  period: 24h
 
         alloy:
           enabled: true
