@@ -16,25 +16,26 @@ spec:
         controller:
           type: daemonset
 
+        global:
+          podSecurityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            fsGroup: 0
+
         serviceAccount:
           create: true
 
-        mounts:
-          varlog: true
-          dockercontainers: true
-          
-        podSecurityContext:
-          runAsUser: 0
-          fsGroup: 0
-          runAsGroup: 0
-
-        securityContext:
-          privileged: true
-          runAsUser: 0
-          capabilities:
-            add: ["SYS_ADMIN"]
-        
         alloy:
+          mounts:
+            varlog: true
+            dockercontainers: true
+
+          securityContext:
+            privileged: true
+            runAsUser: 0
+            capabilities:
+              add: ["SYS_ADMIN"]
+
           configMap:
             content: |
               discovery.kubernetes "pods" {
