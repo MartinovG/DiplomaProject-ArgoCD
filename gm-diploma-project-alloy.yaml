@@ -18,6 +18,17 @@ spec:
           serviceAccount:
             create: true
 
+          mounts:
+            extra:
+              - name: varlog
+                mountPath: /var/log
+                hostPath: /var/log
+                readOnly: true
+              - name: varlibdockercontainers
+                mountPath: /var/lib/docker/containers
+                hostPath: /var/lib/docker/containers
+                readOnly: true
+
           config: |
             discovery.kubernetes "all_pods" {
               role = "pod"
