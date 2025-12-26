@@ -12,13 +12,19 @@ spec:
     helm:
       values: |
         alloy:
+          rbac:
+            create: true
+          
+          serviceAccount:
+            create: true
+
           config: |
-            discovery.kubernetes "pods" {
+            discovery.kubernetes "all_pods" {
               role = "pod"
             }
 
             discovery.relabel "pod_logs" {
-              targets = discovery.kubernetes.pods.targets
+              targets = discovery.kubernetes.all_pods.targets
               rule {
                 source_labels = ["__meta_kubernetes_namespace"]
                 target_label  = "namespace"
@@ -31,9 +37,13 @@ spec:
                 source_labels = ["__meta_kubernetes_pod_container_name"]
                 target_label  = "container"
               }
+              rule {
+                source_labels = ["__meta_kubernetes_pod_label_app"]
+                target_label  = "app"
+              }
             }
 
-            loki.source.kubernetes "all_pods" {
+            loki.source.kubernetes "pods" {
               targets    = discovery.relabel.pod_logs.output
               forward_to = [loki.write.local.receiver]
             }
