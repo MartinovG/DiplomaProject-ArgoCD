@@ -11,6 +11,8 @@ spec:
     targetRevision: "6.24.0"
     helm:
       values: |
+        deploymentMode: SingleBinary
+        
         loki:
           auth_enabled: false
           commonConfig:
@@ -51,6 +53,10 @@ spec:
                   source_labels = ["__meta_kubernetes_pod_label_app"]
                   target_label  = "app"
                 }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  target_label  = "container"
+                }
               }
 
               loki.source.kubernetes "local_pods" {
@@ -69,6 +75,13 @@ spec:
 
         promtail:
           enabled: false
+
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
