@@ -1,3 +1,4 @@
+# martinovg/diplomaproject-argocd/.../gm-diploma-project-alloy.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -27,13 +28,14 @@ spec:
               hostPath:
                 path: /var/lib/docker/containers
 
-          extraVolumeMounts:
-            - name: varlog
-              mountPath: /var/log
-              readOnly: true
-            - name: varlibdockercontainers
-              mountPath: /var/lib/docker/containers
-              readOnly: true
+          mounts:
+            extra:
+              - name: varlog
+                mountPath: /var/log
+                readOnly: true
+              - name: varlibdockercontainers
+                mountPath: /var/lib/docker/containers
+                readOnly: true
 
           config: |
             discovery.kubernetes "all_pods" {
