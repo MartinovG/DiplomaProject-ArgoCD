@@ -12,6 +12,9 @@ spec:
     helm:
       values: |
         deploymentMode: SingleBinary
+
+        rbac:
+          create: true
         
         loki:
           auth_enabled: false
