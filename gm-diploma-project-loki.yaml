@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gm-diploma-project-loki
+  name: gm-diploma-project-loki-stack
   namespace: argocd
 spec:
   project: default
@@ -11,43 +11,63 @@ spec:
     targetRevision: "6.24.0"
     helm:
       values: |
-        deploymentMode: SingleBinary
         loki:
           auth_enabled: false
           commonConfig:
             replication_factor: 1
           storage:
             type: 'filesystem'
-          
           schemaConfig:
             configs:
               - from: "2024-04-01"
                 store: tsdb
                 object_store: filesystem
                 schema: v13
-                index:
-                  prefix: loki_index_
-                  period: 24h
-        
-        singleBinary:
-          replicas: 1
-          persistence:
-            enabled: true
-            size: 10Gi
-            storageClass: gp3
 
-        read:
-          replicas: 0
-        write:
-          replicas: 0
-        backend:
-          replicas: 0
+        alloy:
+          enabled: true
+          controller:
+            type: daemonset
+          alloy:
+            config: |
+              discovery.kubernetes "pods" {
+                role = "pod"
+              }
+
+              discovery.relabel "pod_logs" {
+                targets = discovery.kubernetes.pods.targets
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
+                  separator     = ";"
+                  regex         = "(.+);(.+);(.+);(.+)"
+                  replacement   = "/var/log/pods/${1}_${2}_${3}/${4}/*.log"
+                  target_label  = "__path__"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  target_label  = "namespace"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_label_app"]
+                  target_label  = "app"
+                }
+              }
+
+              loki.source.kubernetes "local_pods" {
+                targets    = discovery.relabel.pod_logs.output
+                forward_to = [loki.write.endpoint.receiver]
+              }
+
+              loki.write "endpoint" {
+                endpoint {
+                  url = "http://{{ include \"loki.fullname\" . }}-gateway.{{ .Release.Namespace }}.svc.cluster.local/loki/api/v1/push"
+                }
+              }
 
         gateway:
-          enabled: false
-        resultsCache:
-          enabled: false
-        chunksCache:
+          enabled: true
+
+        promtail:
           enabled: false
   destination:
     server: 'https://kubernetes.default.svc'
@@ -56,5 +76,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
