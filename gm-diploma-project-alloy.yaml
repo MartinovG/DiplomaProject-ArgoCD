@@ -13,16 +13,32 @@ spec:
       values: |
         rbac:
           create: true
+        
         serviceAccount:
           create: true
+
         controller:
           type: daemonset
+          volumes:
+            extra:
+              - name: varlog
+                hostPath:
+                  path: /var/log
+              - name: varlibdockercontainers
+                hostPath:
+                  path: /var/lib/docker/containers
 
         alloy:
-        
           mounts:
-            varlog: true
-            dockercontainers: true
+            varlog: false 
+            dockercontainers: false
+            extra:
+              - name: varlog
+                mountPath: /var/log
+                readOnly: true
+              - name: varlibdockercontainers
+                mountPath: /var/lib/docker/containers
+                readOnly: true
 
           config: |
             discovery.kubernetes "all_pods" {
