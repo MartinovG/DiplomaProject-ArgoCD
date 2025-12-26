@@ -33,6 +33,9 @@ spec:
           enabled: true
           controller:
             type: daemonset
+          mounts:
+            varlog: true
+            dockercontainers: true
           alloy:
             config: |
               discovery.kubernetes "all_pods" {
