@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gm-diploma-project-loki-stack
+  name: gm-diploma-project-loki
   namespace: argocd
 spec:
   project: default
@@ -15,7 +15,7 @@ spec:
 
         rbac:
           create: true
-        
+
         loki:
           auth_enabled: false
           commonConfig:
@@ -31,24 +31,33 @@ spec:
                 index:
                   prefix: index_
                   period: 24h
+          podSecurityContext:
+            fsGroup: 10001
+            runAsGroup: 10001
+            runAsUser: 10001
 
         alloy:
           enabled: true
+          # Enable RBAC for the collector
           rbac:
             create: true
           controller:
             type: daemonset
-          mounts:
-            varlog: true
-            dockercontainers: true
+
           alloy:
+            mounts:
+              varlog: true
+              dockercontainers: true
+            
             config: |
-              discovery.kubernetes "all_pods" {
+              discovery.kubernetes "pods" {
                 role = "pod"
               }
 
               discovery.relabel "pod_logs" {
-                targets = discovery.kubernetes.all_pods.targets
+                targets = discovery.kubernetes.pods.targets
+                
+                # 1. Construct the log path
                 rule {
                   source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name", "__meta_kubernetes_pod_uid", "__meta_kubernetes_pod_container_name"]
                   separator     = ";"
@@ -56,38 +65,32 @@ spec:
                   replacement   = "/var/log/pods/${1}_${2}_${3}/${4}/*.log"
                   target_label  = "__path__"
                 }
-                rule {
-                  source_labels = ["__meta_kubernetes_namespace"]
-                  target_label  = "namespace"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_pod_label_app"]
-                  target_label  = "app"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_pod_name"]
-                  target_label  = "pod"
-                }
-                rule {
-                  source_labels = ["__meta_kubernetes_pod_container_name"]
-                  target_label  = "container"
-                }
+
+                # 2. Promote labels for Grafana
+                rule { source_labels = ["__meta_kubernetes_namespace"]; target_label = "namespace" }
+                rule { source_labels = ["__meta_kubernetes_pod_name"]; target_label = "pod" }
+                rule { source_labels = ["__meta_kubernetes_pod_label_app"]; target_label = "app" }
+                rule { source_labels = ["__meta_kubernetes_pod_container_name"]; target_label = "container" }
               }
 
-              loki.source.kubernetes "local_pods" {
-                targets    = discovery.relabel.pod_logs.output
+              # 3. Read the files
+              local.file_match "pod_logs" {
+                path_targets = discovery.relabel.pod_logs.output
+              }
+
+              loki.source.file "pod_logs" {
+                targets    = local.file_match.pod_logs.targets
                 forward_to = [loki.write.endpoint.receiver]
               }
 
               loki.write "endpoint" {
                 endpoint {
-                  url = "http://gm-diploma-project-loki-stack-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+                  url = "http://gm-diploma-project-loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
                 }
               }
 
         gateway:
           enabled: true
-
         promtail:
           enabled: false
 
