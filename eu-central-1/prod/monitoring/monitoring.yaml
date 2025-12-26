@@ -19,7 +19,7 @@ spec:
             - name: Loki
               type: loki
               uid: loki-ds-01
-              url: http://gm-diploma-project-loki.monitoring.svc.cluster.local:3100
+              url: http://gm-diploma-project-loki-stack-gateway.monitoring.svc.cluster.local
               access: proxy
               isDefault: false
               jsonData:
