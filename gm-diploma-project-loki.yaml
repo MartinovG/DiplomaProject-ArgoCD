@@ -22,6 +22,12 @@ spec:
           replicas: 1
           persistence:
             size: 10Gi
+        read:
+          replicas: 0
+        write:
+          replicas: 0
+        backend:
+          replicas: 0
         gateway:
           enabled: false
         resultsCache:
