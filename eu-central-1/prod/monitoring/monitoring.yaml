@@ -44,6 +44,29 @@ spec:
 
         prometheus:
           prometheusSpec:
+            additionalPrometheusRulesMap:
+              production-guards:
+                groups:
+                - name: production-availability
+                  rules:
+                  - alert: ProductionBackendDown
+                    expr: kube_deployment_status_replicas_available{deployment="backend", namespace="gm-diploma-project-prod"} == 0
+                    for: 1m
+                    labels:
+                      severity: critical
+                    annotations:
+                      summary: "Production Backend Down"
+                      description: "Kubernetes reports 0 available pods for the Backend deployment."
+
+                  - alert: ProductionFrontendDown
+                    expr: kube_deployment_status_replicas_available{deployment="frontend", namespace="gm-diploma-project-prod"} == 0
+                    for: 1m
+                    labels:
+                      severity: critical
+                    annotations:
+                      summary: "Production Frontend Down"
+                      description: "Kubernetes reports 0 available pods for the Frontend deployment."
+
             storageSpec:
               volumeClaimTemplate:
                 spec:
@@ -51,7 +74,7 @@ spec:
                   resources:
                     requests:
                       storage: 20Gi
-        
+
         kubeControllerManager:
           enabled: false
         kubeScheduler:
@@ -72,6 +95,7 @@ spec:
               routes:
                 - match:
                     alertname: Watchdog
+                  receiver: 'null' 
             receivers:
             - name: 'null'
             - name: 'discord-notifications'
@@ -81,7 +105,7 @@ spec:
                 send_resolved: true
                 title: '{{ template "slack.default.title" . }}'
                 text: '{{ template "slack.default.text" . }}'
-                      
+      
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: monitoring
