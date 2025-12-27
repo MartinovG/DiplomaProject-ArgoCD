@@ -51,6 +51,29 @@ spec:
                   resources:
                     requests:
                       storage: 20Gi
+        
+        alertmanager:
+          config:
+            global:
+              resolve_timeout: 5m
+            route:
+              group_by: ['alertname', 'job']
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 12h
+              receiver: 'discord-notifications'
+              routes:
+                - match:
+                    alertname: Watchdog
+            receivers:
+            - name: 'null'
+            - name: 'discord-notifications'
+              slack_configs:
+              - api_url: 'https://discord.com/api/webhooks/1451569209124585634/Wjt2r2gmcXDRJKzbEllMa9SqHL1_uNmShXFId7zGvXEJxTGW1IG5PHAZjR5MOqdc3h8T/slack' 
+                channel: '#alerts'
+                send_resolved: true
+                title: '{{ template "slack.default.title" . }}'
+                text: '{{ template "slack.default.text" . }}'
                       
   destination:
     server: 'https://kubernetes.default.svc'
