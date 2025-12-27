@@ -22,6 +22,7 @@ app:
       image:
         repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-api
         tag: backend-sha-46ad8d0b4bfd6923773ba05d2c1148e03456c5a6
+        pullPolicy: Always
       service:
         port: 4000
       ingressPath: /api
@@ -48,6 +49,7 @@ app:
       image:
         repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-frontend
         tag: frontend-sha-46ad8d0b4bfd6923773ba05d2c1148e03456c5a6
+        pullPolicy: Always
       service:
         port: 80
       ingressPath: /
