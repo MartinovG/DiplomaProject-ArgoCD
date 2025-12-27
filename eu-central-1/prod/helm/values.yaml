@@ -20,7 +20,7 @@ app:
       replicaCount: 2
       containerPort: 4000
       image:
-        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-api
         tag: backend-sha-3aa2d362cea1b218d15745026571b39601c5c41a
       service:
         port: 4000
@@ -46,7 +46,7 @@ app:
       replicaCount: 2
       containerPort: 3000
       image:
-        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-repo-api
+        repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-frontend
         tag: frontend-sha-3aa2d362cea1b218d15745026571b39601c5c41a
       service:
         port: 80
