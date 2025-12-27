@@ -52,6 +52,13 @@ spec:
                     requests:
                       storage: 20Gi
         
+        kubeControllerManager:
+          enabled: false
+        kubeScheduler:
+          enabled: false
+        kubeProxy:
+          enabled: false
+
         alertmanager:
           config:
             global:
