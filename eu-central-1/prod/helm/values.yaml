@@ -29,15 +29,15 @@ app:
       autoscaling:
         enabled: true
         minReplicas: 2
-        maxReplicas: 100
+        maxReplicas: 10
         targetCPUUtilizationPercentage: 50
       resources: 
         requests:
-          cpu: "1000m"
-          memory: "1280Mi"
+          cpu: "100m"
+          memory: "128Mi"
         limits:
-          cpu: "5000m"
-          memory: "5120Mi"
+          cpu: "500m"
+          memory: "512Mi"
       env:
         - name: DB_HOST
           value: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
@@ -68,12 +68,12 @@ app:
       autoscaling:
         enabled: true 
         minReplicas: 2
-        maxReplicas: 50
+        maxReplicas: 5
         targetCPUUtilizationPercentage: 80
       resources:
         requests:
-          cpu: "1000m"
-          memory: "1280Mi"
+          cpu: "100m"
+          memory: "128Mi"
       env:
         - name: NEXT_PUBLIC_API_URL
           value: "/api"
