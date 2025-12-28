@@ -8,7 +8,9 @@ metadata:
   labels:
     app: {{ $appName }}
 spec:
+  {{- if not $appConfig.autoscaling.enabled }}
   replicas: {{ $appConfig.replicaCount | default 1 }}
+  {{- end }}
   selector:
     matchLabels:
       app: {{ $appName }}
