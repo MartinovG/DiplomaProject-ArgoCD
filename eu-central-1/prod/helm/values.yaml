@@ -33,11 +33,11 @@ app:
         targetCPUUtilizationPercentage: 50
       resources: 
         requests:
-          cpu: "100m"
-          memory: "128Mi"
+          cpu: "1000m"
+          memory: "1280Mi"
         limits:
-          cpu: "500m"
-          memory: "512Mi"
+          cpu: "5000m"
+          memory: "5120Mi"
       env:
         - name: DB_HOST
           value: "gm-diploma-project-db.c3y80gagen20.eu-central-1.rds.amazonaws.com"
@@ -72,8 +72,8 @@ app:
         targetCPUUtilizationPercentage: 80
       resources:
         requests:
-          cpu: "100m"
-          memory: "128Mi"
+          cpu: "1000m"
+          memory: "1280Mi"
       env:
         - name: NEXT_PUBLIC_API_URL
           value: "/api"
