@@ -26,6 +26,18 @@ app:
       service:
         port: 4000
       ingressPath: /api
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 50 
+      resources: 
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
       env:
         - name: DB_HOST
           value: "postgres"
@@ -50,6 +62,15 @@ app:
       service:
         port: 80
       ingressPath: /
+      autoscaling:
+        enabled: true 
+        minReplicas: 2
+        maxReplicas: 5
+        targetCPUUtilizationPercentage: 80
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
       env:
         - name: NEXT_PUBLIC_API_URL
           value: "/api"
