@@ -1,3 +1,6 @@
+{{- range $appName, $appConfig := .Values.apps }}
+{{- if $appConfig.autoscaling.enabled }}
+---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
