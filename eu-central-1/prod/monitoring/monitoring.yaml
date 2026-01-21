@@ -13,6 +13,9 @@ spec:
     targetRevision: "80.4.2"
     helm:
       values: |
+        prometheusOperator:
+          admissionWebhooks:
+            enabled: false
         grafana:
           adminPassword: "pass1234"
           additionalDataSources:
