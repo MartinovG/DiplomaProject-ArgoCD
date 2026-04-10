@@ -2,7 +2,7 @@ apiVersion: rds.services.k8s.aws/v1alpha1
 kind: DBInstance
 metadata:
   name: gm-diploma-project-db
-  namespace: default
+  namespace: gm-diploma-project-prod
 spec:
   engine: postgres
   engineVersion: "17.6"
@@ -13,7 +13,7 @@ spec:
   masterUsername: postgres
   
   masterUserPassword:
-    namespace: default
+    namespace: gm-diploma-project-prod
     name: gm-diploma-prod-db-secret
     key: password
     
