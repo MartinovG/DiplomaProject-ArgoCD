@@ -29,7 +29,7 @@ app:
       autoscaling:
         enabled: true
         minReplicas: 2
-        maxReplicas: 100
+        maxReplicas: 10
         targetCPUUtilizationPercentage: 50
       resources: 
         requests:
