@@ -13,7 +13,7 @@ spec:
     path: eu-central-1/prod/databases 
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: gm-diploma-project-prod
   syncPolicy:
     automated:
       prune: true
