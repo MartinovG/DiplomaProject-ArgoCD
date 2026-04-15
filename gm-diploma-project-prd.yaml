@@ -5,7 +5,7 @@ metadata:
   name: gm-diploma-project-prd
   namespace: argocd
   finalizers:                                     
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io/finalizer
 spec:
   project: default
   source:
