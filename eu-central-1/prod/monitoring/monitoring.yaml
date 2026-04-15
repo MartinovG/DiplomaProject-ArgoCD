@@ -4,7 +4,7 @@ metadata:
   name: monitoring
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io/finalizer
 spec:
   project: default
   source:
