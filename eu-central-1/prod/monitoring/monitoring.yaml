@@ -16,6 +16,8 @@ spec:
         prometheusOperator:
           admissionWebhooks:
             enabled: false
+          tls:
+            enabled: false
         grafana:
           adminPassword: "pass1234"
           additionalDataSources:
