@@ -58,6 +58,8 @@ app:
           value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
 
     frontend:
+      livenessProbePath: "/api/health"
+      readinessProbePath: "/api/health"
       replicaCount: 2
       containerPort: 3000
       image:
