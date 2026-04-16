@@ -34,6 +34,23 @@ spec:
             - name: CORS_ORIGIN
               value: {{ $.Values.global.corsOrigin | quote }}
             {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ $appConfig.livenessProbePath | default "/" }}
+              port: {{ $appConfig.containerPort }}
+            initialDelaySeconds: {{ $appConfig.livenessProbeInitialDelay | default 15 }}
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ $appConfig.readinessProbePath | default "/" }}
+              port: {{ $appConfig.containerPort }}
+            initialDelaySeconds: {{ $appConfig.readinessProbeInitialDelay | default 5 }}
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
           resources:
             {{- toYaml ($appConfig.resources | default dict) | nindent 12 }}
 {{- end }}
