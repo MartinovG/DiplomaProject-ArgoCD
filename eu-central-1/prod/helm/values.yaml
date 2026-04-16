@@ -17,6 +17,8 @@ app:
 
   apps:
     backend:
+      livenessProbePath: "/api/health"
+      readinessProbePath: "/api/health"
       replicaCount: 2
       containerPort: 4000
       image:
