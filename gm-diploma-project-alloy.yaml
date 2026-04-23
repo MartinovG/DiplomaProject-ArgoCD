@@ -86,6 +86,9 @@ spec:
               loki.write "endpoint" {
                 endpoint {
                   url = "http://gm-diploma-project-loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+                  headers = {
+                    "X-Scope-OrgID" = "fake",
+                  }
                 }
               }
   destination:
