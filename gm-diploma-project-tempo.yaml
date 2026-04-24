@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-tempo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/finalizer
+spec:
+  project: default
+  source:
+    repoURL: "https://grafana.github.io/helm-charts"
+    chart: tempo
+    targetRevision: "1.23.3"
+    helm:
+      values: |
+        tempo:
+          storage:
+            trace:
+              backend: local
+              local:
+                path: /var/tempo/traces
+
+        persistence:
+          enabled: true
+          size: 10Gi
+          storageClassName: gp3
+
+        service:
+          type: ClusterIP
+
+        podSecurityContext:
+          fsGroup: 10001
+          runAsGroup: 10001
+          runAsUser: 10001
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
