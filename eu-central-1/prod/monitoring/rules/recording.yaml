@@ -33,13 +33,9 @@ spec:
               /
             kube_deployment_spec_replicas
 
-        - record: gm_diploma:deployment_restart_rate:5m
+        - record: gm_diploma:pod_restart_rate:5m
           expr: |
-            sum by (namespace, deployment) (
-              rate(kube_pod_container_status_restarts_total[5m])
-              * on (namespace, pod) group_left (deployment)
-              label_replace(kube_replicaset_owner{owner_kind="Deployment"}, "deployment", "$1", "owner_name", "(.*)")
-            )
+            sum by (namespace, pod) (rate(kube_pod_container_status_restarts_total[5m]))
 
     - name: gm-diploma.node
       interval: 30s
