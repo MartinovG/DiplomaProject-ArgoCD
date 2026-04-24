@@ -55,29 +55,7 @@ spec:
 
         prometheus:
           prometheusSpec:
-            additionalPrometheusRulesMap:
-              production-guards:
-                groups:
-                - name: production-availability
-                  rules:
-                  - alert: ProductionBackendDown
-                    expr: kube_deployment_status_replicas_available{deployment="backend", namespace="gm-diploma-project-prod"} == 0
-                    for: 1m
-                    labels:
-                      severity: critical
-                    annotations:
-                      summary: "Production Backend Down"
-                      description: "Kubernetes reports 0 available pods for the Backend deployment."
-
-                  - alert: ProductionFrontendDown
-                    expr: kube_deployment_status_replicas_available{deployment="frontend", namespace="gm-diploma-project-prod"} == 0
-                    for: 1m
-                    labels:
-                      severity: critical
-                    annotations:
-                      summary: "Production Frontend Down"
-                      description: "Kubernetes reports 0 available pods for the Frontend deployment."
-
+            retention: 30d
             storageSpec:
               volumeClaimTemplate:
                 spec:
