@@ -23,6 +23,9 @@ spec:
             existingSecret: grafana-admin-secret
             userKey: admin-user
             passwordKey: admin-password
+          grafana.ini:
+            dashboards:
+              default_home_dashboard_path: /tmp/dashboards/app-overview.json
           additionalDataSources:
             - name: Loki
               type: loki
@@ -34,12 +37,24 @@ spec:
                 maxLines: 1000
                 httpHeaderName1: "X-Scope-OrgID"
                 derivedFields:
-                  - datasourceUid: loki-ds-01
+                  - datasourceUid: tempo-ds-01
                     matcherRegex: "traceID=(\\w+)"
                     name: TraceID
                     url: "$${__value.raw}"
               secureJsonData:
                 httpHeaderValue1: "fake"
+            - name: Tempo
+              type: tempo
+              uid: tempo-ds-01
+              url: http://gm-diploma-project-tempo.monitoring.svc.cluster.local:3100
+              access: proxy
+              isDefault: false
+              jsonData:
+                tracesToLogsV2:
+                  datasourceUid: loki-ds-01
+                  filterByTraceID: true
+                lokiSearch:
+                  datasourceUid: loki-ds-01
           ingress:
             enabled: true
             ingressClassName: alb
