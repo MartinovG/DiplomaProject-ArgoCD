@@ -1,0 +1,53 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: recording-rules
+  namespace: monitoring
+  labels:
+    release: monitoring
+    prometheus: kube-prometheus
+    role: recording-rules
+spec:
+  groups:
+    - name: gm-diploma.pod.cpu
+      interval: 30s
+      rules:
+        - record: gm_diploma:pod_cpu_usage:ratio
+          expr: |
+            sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{container!="", container!="POD"}[5m]))
+              /
+            sum by (namespace, pod, container) (kube_pod_container_resource_limits{resource="cpu"})
+
+        - record: gm_diploma:pod_memory_usage:ratio
+          expr: |
+            sum by (namespace, pod, container) (container_memory_working_set_bytes{container!="", container!="POD"})
+              /
+            sum by (namespace, pod, container) (kube_pod_container_resource_limits{resource="memory"})
+
+    - name: gm-diploma.deployment
+      interval: 30s
+      rules:
+        - record: gm_diploma:deployment_available:ratio
+          expr: |
+            kube_deployment_status_replicas_available
+              /
+            kube_deployment_spec_replicas
+
+        - record: gm_diploma:deployment_restart_rate:5m
+          expr: |
+            sum by (namespace, deployment) (
+              rate(kube_pod_container_status_restarts_total[5m])
+              * on (namespace, pod) group_left (deployment)
+              label_replace(kube_replicaset_owner{owner_kind="Deployment"}, "deployment", "$1", "owner_name", "(.*)")
+            )
+
+    - name: gm-diploma.node
+      interval: 30s
+      rules:
+        - record: gm_diploma:node_cpu_usage:ratio
+          expr: |
+            1 - avg by (node) (rate(node_cpu_seconds_total{mode="idle"}[5m]))
+
+        - record: gm_diploma:node_memory_usage:ratio
+          expr: |
+            1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)

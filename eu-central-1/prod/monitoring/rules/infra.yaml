@@ -1,0 +1,139 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: infra-health
+  namespace: monitoring
+  labels:
+    release: monitoring
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: nodes
+      interval: 30s
+      rules:
+        - alert: NodeNotReady
+          expr: kube_node_status_condition{condition="Ready", status="true"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} not ready"
+            description: "Node has been in NotReady state for more than 5 minutes."
+
+        - alert: NodeUnschedulable
+          expr: kube_node_spec_unschedulable == 1
+          for: 30m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.node }} is unschedulable (cordoned)"
+            description: "Node has been cordoned for over 30 minutes — intentional? Or forgotten after maintenance?"
+
+    - name: prometheus-operator
+      interval: 30s
+      rules:
+        - alert: PrometheusTargetDown
+          expr: |
+            up{job!~"kubelet|kube-.*|apiserver"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Prometheus scrape target down: {{ $labels.job }}"
+            description: "Target {{ $labels.instance }} (job={{ $labels.job }}) has been unreachable for 10m — metrics gap."
+
+        - alert: PrometheusRuleEvaluationFailures
+          expr: rate(prometheus_rule_evaluation_failures_total[5m]) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Prometheus rule evaluation failures"
+            description: "Prometheus is failing to evaluate {{ $value }} rules per second — alerts/recording rules may be missing data."
+
+        - alert: PrometheusNotIngestingSamples
+          expr: rate(prometheus_tsdb_head_samples_appended_total[5m]) == 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Prometheus not ingesting samples"
+            description: "Prometheus TSDB has not appended any samples for 10m — scraping likely broken."
+
+        - alert: AlertmanagerDown
+          expr: up{job="alertmanager-monitoring-kube-prometheus-alertmanager"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Alertmanager is down"
+            description: "Alertmanager is unreachable — alerts will not be delivered."
+
+        - alert: AlertmanagerConfigInconsistent
+          expr: |
+            count by (service) (count_values by (service) ("config_hash", alertmanager_config_hash)) > 1
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Alertmanager config inconsistent across replicas"
+            description: "Alertmanager instances have different config hashes — may cause inconsistent alerting."
+
+    - name: watchdog
+      interval: 30s
+      rules:
+        - alert: Watchdog
+          expr: vector(1)
+          labels:
+            severity: none
+          annotations:
+            summary: "Alerting pipeline heartbeat"
+            description: "This alert always fires — its absence indicates Prometheus/Alertmanager/notification pipeline is broken."
+
+    - name: loki
+      interval: 1m
+      rules:
+        - alert: LokiRequestErrors
+          expr: |
+            100 * sum by (namespace, job, route) (rate(loki_request_duration_seconds_count{status_code=~"5.."}[5m]))
+              /
+            sum by (namespace, job, route) (rate(loki_request_duration_seconds_count[5m])) > 10
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Loki route {{ $labels.route }} has > 10% server errors"
+            description: "Loki is returning 5xx responses for {{ $labels.route }} — log ingest or query may be broken."
+
+        - alert: LokiDown
+          expr: up{job=~".*loki.*"} == 0
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Loki is down"
+            description: "Loki instance {{ $labels.instance }} has been unreachable for 5m — logs will be lost."
+
+    - name: external-secrets
+      interval: 1m
+      rules:
+        - alert: ExternalSecretSyncFailed
+          expr: |
+            external_secrets_sync_calls_error > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ExternalSecret sync failures for {{ $labels.name }}"
+            description: "ExternalSecret {{ $labels.namespace }}/{{ $labels.name }} has been failing to sync from AWS Secrets Manager."
+
+        - alert: ClusterSecretStoreUnavailable
+          expr: |
+            external_secrets_sync_calls_error{kind="ClusterSecretStore"} > 0
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "ClusterSecretStore {{ $labels.name }} unavailable"
+            description: "ClusterSecretStore cannot connect to AWS — check IRSA role and trust policy."

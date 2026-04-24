@@ -1,0 +1,71 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: slo-availability
+  namespace: monitoring
+  labels:
+    release: monitoring
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: production-availability
+      interval: 30s
+      rules:
+        - alert: ProductionBackendDown
+          expr: kube_deployment_status_replicas_available{deployment="backend", namespace="gm-diploma-project-prod"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: backend
+          annotations:
+            summary: "Production backend has no available replicas"
+            description: "Deployment {{ $labels.deployment }} in {{ $labels.namespace }} has 0 available pods."
+
+        - alert: ProductionFrontendDown
+          expr: kube_deployment_status_replicas_available{deployment="frontend", namespace="gm-diploma-project-prod"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: frontend
+          annotations:
+            summary: "Production frontend has no available replicas"
+            description: "Deployment {{ $labels.deployment }} in {{ $labels.namespace }} has 0 available pods."
+
+        - alert: ProductionBackendDegraded
+          expr: kube_deployment_status_replicas_available{deployment="backend", namespace="gm-diploma-project-prod"} < kube_deployment_spec_replicas{deployment="backend", namespace="gm-diploma-project-prod"}
+          for: 5m
+          labels:
+            severity: warning
+            service: backend
+          annotations:
+            summary: "Backend running with reduced capacity"
+            description: "Backend has fewer available replicas than desired for over 5m."
+
+        - alert: ProductionFrontendDegraded
+          expr: kube_deployment_status_replicas_available{deployment="frontend", namespace="gm-diploma-project-prod"} < kube_deployment_spec_replicas{deployment="frontend", namespace="gm-diploma-project-prod"}
+          for: 5m
+          labels:
+            severity: warning
+            service: frontend
+          annotations:
+            summary: "Frontend running with reduced capacity"
+            description: "Frontend has fewer available replicas than desired for over 5m."
+
+        - alert: HPAAtMaxReplicas
+          expr: kube_horizontalpodautoscaler_status_current_replicas{namespace="gm-diploma-project-prod"} == kube_horizontalpodautoscaler_spec_max_replicas{namespace="gm-diploma-project-prod"}
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "HPA {{ $labels.horizontalpodautoscaler }} pinned at max replicas"
+            description: "HPA has been saturated at its max replica count for 10m — consider raising the limit or investigating load."
+
+        - alert: DeploymentReplicasMismatch
+          expr: kube_deployment_spec_replicas{namespace="gm-diploma-project-prod"} != kube_deployment_status_replicas_available{namespace="gm-diploma-project-prod"}
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} stuck in replica mismatch"
+            description: "Deployment has not matched its desired replica count for 15m."

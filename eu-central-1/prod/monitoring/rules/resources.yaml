@@ -1,0 +1,135 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: resource-pressure
+  namespace: monitoring
+  labels:
+    release: monitoring
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: pod-resources
+      interval: 30s
+      rules:
+        - alert: PodCPUNearLimit
+          expr: |
+            (
+              sum(rate(container_cpu_usage_seconds_total{namespace="gm-diploma-project-prod", container!="", container!="POD"}[5m])) by (namespace, pod, container)
+              /
+              sum(kube_pod_container_resource_limits{namespace="gm-diploma-project-prod", resource="cpu"}) by (namespace, pod, container)
+            ) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} CPU usage > 85% of limit"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has used >85% of its CPU limit for 10m."
+
+        - alert: PodMemoryNearLimit
+          expr: |
+            (
+              container_memory_working_set_bytes{namespace="gm-diploma-project-prod", container!="", container!="POD"}
+              /
+              kube_pod_container_resource_limits{namespace="gm-diploma-project-prod", resource="memory"}
+            ) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.pod }} memory usage > 85% of limit"
+            description: "Container {{ $labels.container }} in pod {{ $labels.pod }} has used >85% of its memory limit for 10m — risk of OOMKill."
+
+        - alert: PodNoResourceLimits
+          expr: |
+            count by (namespace, pod, container) (
+              kube_pod_container_info{namespace="gm-diploma-project-prod"}
+              unless on (namespace, pod, container)
+              kube_pod_container_resource_limits{namespace="gm-diploma-project-prod", resource="memory"}
+            ) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} has no memory limit"
+            description: "Container in pod {{ $labels.pod }} is running without a memory limit — can OOM the node."
+
+    - name: node-resources
+      interval: 30s
+      rules:
+        - alert: NodeCPUHighUsage
+          expr: |
+            100 - (avg by (node) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.node }} CPU usage high"
+            description: "Node CPU utilization has been above 85% for 10m."
+
+        - alert: NodeMemoryHighUsage
+          expr: |
+            (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Node {{ $labels.instance }} memory usage high"
+            description: "Node memory utilization has been above 85% for 10m."
+
+        - alert: NodeDiskPressure
+          expr: kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} under disk pressure"
+            description: "Kubelet is reporting DiskPressure condition — pods may be evicted."
+
+        - alert: NodeMemoryPressure
+          expr: kube_node_status_condition{condition="MemoryPressure", status="true"} == 1
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Node {{ $labels.node }} under memory pressure"
+            description: "Kubelet is reporting MemoryPressure condition — pods may be evicted."
+
+    - name: persistent-volumes
+      interval: 1m
+      rules:
+        - alert: PersistentVolumeFillingUp
+          expr: |
+            (
+              kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes
+            ) < 0.15
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} has less than 15% space"
+            description: "Persistent volume {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is >85% full."
+
+        - alert: PersistentVolumeFillingUpCritical
+          expr: |
+            (
+              kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes
+            ) < 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} almost full"
+            description: "Persistent volume {{ $labels.persistentvolumeclaim }} in {{ $labels.namespace }} is >95% full — writes may fail."
+
+        - alert: PersistentVolumeInodesFillingUp
+          expr: |
+            (
+              kubelet_volume_stats_inodes_free / kubelet_volume_stats_inodes
+            ) < 0.15
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "PVC {{ $labels.persistentvolumeclaim }} running low on inodes"
+            description: "Persistent volume {{ $labels.persistentvolumeclaim }} has used >85% of inodes."
