@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+
+    route:
+      group_by: ['alertname', 'severity', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'discord-default'
+      routes:
+        - matchers:
+            - alertname = Watchdog
+          receiver: 'null'
+        - matchers:
+            - severity = none
+          receiver: 'null'
+        - matchers:
+            - severity = critical
+          receiver: 'discord-critical'
+          repeat_interval: 1h
+          group_wait: 10s
+          continue: false
+
+    receivers:
+      - name: 'null'
+
+      - name: 'discord-default'
+        slack_configs:
+          - api_url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/webhook
+            channel: '#alerts'
+            send_resolved: true
+            username: 'GM Diploma Alerts'
+            icon_emoji: ':warning:'
+            color: '{{ if eq .Status "resolved" }}good{{ else if eq .CommonLabels.severity "critical" }}danger{{ else }}warning{{ end }}'
+            title: '{{ if eq .Status "firing" }}🔥 [{{ .CommonLabels.severity | toUpper }}] {{ .GroupLabels.alertname }}{{ else }}✅ [RESOLVED] {{ .GroupLabels.alertname }}{{ end }}'
+            text: |-
+              {{ range .Alerts }}
+              *Summary:* {{ .Annotations.summary }}
+              {{ if .Annotations.description }}*Details:* {{ .Annotations.description }}{{ end }}
+              {{ if .Labels.namespace }}*Namespace:* `{{ .Labels.namespace }}`{{ end }}{{ if .Labels.pod }}
+              *Pod:* `{{ .Labels.pod }}`{{ end }}{{ if .Labels.service }}
+              *Service:* `{{ .Labels.service }}`{{ end }}{{ if .Labels.deployment }}
+              *Deployment:* `{{ .Labels.deployment }}`{{ end }}
+              ⏱ Started: `{{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}`
+              📊 <https://grafana-gmdiplomaproject.elsys.itgix.eu|Dashboard> · <https://grafana-gmdiplomaproject.elsys.itgix.eu/explore|Logs>
+              {{ end }}
+
+      - name: 'discord-critical'
+        slack_configs:
+          - api_url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/webhook
+            channel: '#alerts'
+            send_resolved: true
+            username: 'GM Diploma Alerts (CRITICAL)'
+            icon_emoji: ':rotating_light:'
+            color: '{{ if eq .Status "resolved" }}good{{ else }}danger{{ end }}'
+            title: '{{ if eq .Status "firing" }}🚨 CRITICAL — {{ .GroupLabels.alertname }}{{ else }}✅ [RESOLVED] {{ .GroupLabels.alertname }}{{ end }}'
+            text: |-
+              {{ range .Alerts }}
+              ⚠️ *{{ .Annotations.summary }}*
+              {{ if .Annotations.description }}{{ .Annotations.description }}{{ end }}
+
+              *Namespace:* `{{ .Labels.namespace }}`{{ if .Labels.pod }}
+              *Pod:* `{{ .Labels.pod }}`{{ end }}{{ if .Labels.service }}
+              *Service:* `{{ .Labels.service }}`{{ end }}{{ if .Labels.deployment }}
+              *Deployment:* `{{ .Labels.deployment }}`{{ end }}
+              ⏱ Firing since: `{{ .StartsAt.Format "15:04:05 MST" }}`
+              📊 <https://grafana-gmdiplomaproject.elsys.itgix.eu|Grafana> · <https://grafana-gmdiplomaproject.elsys.itgix.eu/explore|Logs>
+              {{ end }}
+
+    inhibit_rules:
+      - source_matchers:
+          - severity = critical
+        target_matchers:
+          - severity = warning
+        equal: ['alertname', 'namespace']
