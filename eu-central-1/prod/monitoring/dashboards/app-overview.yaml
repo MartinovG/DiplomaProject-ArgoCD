@@ -1,0 +1,198 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gm-diploma-app-overview-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  app-overview.json: |
+    {
+      "uid": "gm-diploma-app-overview",
+      "title": "GM Diploma — Application Overview",
+      "tags": ["gm-diploma", "application"],
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": {"from": "now-1h", "to": "now"},
+      "timezone": "",
+      "editable": true,
+      "templating": {
+        "list": [
+          {
+            "name": "datasource",
+            "type": "datasource",
+            "query": "prometheus",
+            "current": {"text": "Prometheus", "value": "Prometheus"},
+            "hide": 0,
+            "label": "Datasource"
+          },
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": {"type": "prometheus", "uid": "${datasource}"},
+            "query": "label_values(kube_pod_info, namespace)",
+            "regex": "/gm-diploma.*/",
+            "current": {"text": "gm-diploma-project-prod", "value": "gm-diploma-project-prod"},
+            "refresh": 1,
+            "label": "Namespace"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Backend Pods Available",
+          "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "kube_deployment_status_replicas_available{deployment=\"backend\", namespace=\"$namespace\"}",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "graphMode": "area", "textMode": "auto"},
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {"mode": "absolute", "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 2}
+              ]}
+            }
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Frontend Pods Available",
+          "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "kube_deployment_status_replicas_available{deployment=\"frontend\", namespace=\"$namespace\"}",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "graphMode": "area", "textMode": "auto"},
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {"mode": "absolute", "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 2}
+              ]}
+            }
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Total Pods in Namespace",
+          "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "count(kube_pod_info{namespace=\"$namespace\"})",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "textMode": "auto"}
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Pod Restarts (1h)",
+          "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "sum(increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[1h]))",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "textMode": "auto"},
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {"mode": "absolute", "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]}
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "timeseries",
+          "title": "Pod CPU Usage (% of limit)",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "gm_diploma:pod_cpu_usage:ratio{namespace=\"$namespace\"} * 100",
+            "legendFormat": "{{pod}}/{{container}}",
+            "refId": "A"
+          }],
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}},
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 11,
+          "type": "timeseries",
+          "title": "Pod Memory Usage (% of limit)",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "gm_diploma:pod_memory_usage:ratio{namespace=\"$namespace\"} * 100",
+            "legendFormat": "{{pod}}/{{container}}",
+            "refId": "A"
+          }],
+          "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100}},
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 20,
+          "type": "timeseries",
+          "title": "HPA Current vs Target Replicas",
+          "gridPos": {"x": 0, "y": 12, "w": 12, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [
+            {
+              "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"$namespace\"}",
+              "legendFormat": "{{horizontalpodautoscaler}} — current",
+              "refId": "A"
+            },
+            {
+              "expr": "kube_horizontalpodautoscaler_spec_max_replicas{namespace=\"$namespace\"}",
+              "legendFormat": "{{horizontalpodautoscaler}} — max",
+              "refId": "B"
+            }
+          ],
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 21,
+          "type": "timeseries",
+          "title": "Pod Restart Rate (5m)",
+          "gridPos": {"x": 12, "y": 12, "w": 12, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "gm_diploma:pod_restart_rate:5m{namespace=\"$namespace\"} * 60",
+            "legendFormat": "{{pod}}",
+            "refId": "A"
+          }],
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 30,
+          "type": "table",
+          "title": "Pod Status",
+          "gridPos": {"x": 0, "y": 19, "w": 24, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "${datasource}"},
+          "targets": [{
+            "expr": "kube_pod_status_phase{namespace=\"$namespace\"} == 1",
+            "refId": "A",
+            "instant": true,
+            "format": "table"
+          }],
+          "transformations": [
+            {"id": "organize", "options": {
+              "excludeByName": {"__name__": true, "Time": true, "Value": true, "job": true, "instance": true, "container": true, "endpoint": true, "service": true, "prometheus": true, "__typing_name__": true, "uid": true}
+            }}
+          ]
+        }
+      ]
+    }

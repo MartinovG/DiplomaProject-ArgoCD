@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gm-diploma-logs-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  logs.json: |
+    {
+      "uid": "gm-diploma-logs",
+      "title": "GM Diploma — Logs Explorer",
+      "tags": ["gm-diploma", "logs", "loki"],
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": {"from": "now-1h", "to": "now"},
+      "editable": true,
+      "templating": {
+        "list": [
+          {
+            "name": "loki",
+            "type": "datasource",
+            "query": "loki",
+            "current": {"text": "Loki", "value": "Loki"},
+            "hide": 0,
+            "label": "Loki"
+          },
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": {"type": "loki", "uid": "${loki}"},
+            "query": "label_values(namespace)",
+            "regex": "/gm-diploma.*|monitoring|external-secrets/",
+            "current": {"text": "gm-diploma-project-prod", "value": "gm-diploma-project-prod"},
+            "refresh": 1,
+            "label": "Namespace"
+          },
+          {
+            "name": "app",
+            "type": "query",
+            "datasource": {"type": "loki", "uid": "${loki}"},
+            "query": "label_values({namespace=\"$namespace\"}, app)",
+            "includeAll": true,
+            "multi": true,
+            "current": {"text": "All", "value": "$__all"},
+            "refresh": 1,
+            "label": "App"
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Log Volume (last hour)",
+          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 4},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "sum(count_over_time({namespace=\"$namespace\"}[1h]))",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "graphMode": "area", "textMode": "auto"}
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "Error Lines (last hour)",
+          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 4},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "sum(count_over_time({namespace=\"$namespace\"} |~ \"(?i)(error|exception|fatal|panic)\" [1h]))",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "graphMode": "area", "textMode": "auto"},
+          "fieldConfig": {
+            "defaults": {
+              "thresholds": {"mode": "absolute", "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 100}
+              ]}
+            }
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Active Containers Logging",
+          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 4},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "count(count_over_time({namespace=\"$namespace\"}[5m]) > 0) by (pod)",
+            "refId": "A"
+          }],
+          "options": {"colorMode": "value", "textMode": "auto"}
+        },
+        {
+          "id": 10,
+          "type": "timeseries",
+          "title": "Log Rate by App",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "sum by (app) (rate({namespace=\"$namespace\", app=~\"$app\"}[5m]))",
+            "legendFormat": "{{app}}",
+            "refId": "A"
+          }],
+          "fieldConfig": {"defaults": {"unit": "logs/s"}},
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 11,
+          "type": "timeseries",
+          "title": "Error Rate by App",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "sum by (app) (rate({namespace=\"$namespace\", app=~\"$app\"} |~ \"(?i)(error|exception|fatal|panic)\" [5m]))",
+            "legendFormat": "{{app}}",
+            "refId": "A"
+          }],
+          "fieldConfig": {"defaults": {"unit": "logs/s"}},
+          "options": {"legend": {"displayMode": "table", "placement": "bottom"}}
+        },
+        {
+          "id": 20,
+          "type": "logs",
+          "title": "Live Logs",
+          "gridPos": {"x": 0, "y": 12, "w": 24, "h": 14},
+          "datasource": {"type": "loki", "uid": "${loki}"},
+          "targets": [{
+            "expr": "{namespace=\"$namespace\", app=~\"$app\"}",
+            "refId": "A"
+          }],
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "sortOrder": "Descending",
+            "dedupStrategy": "none",
+            "enableLogDetails": true
+          }
+        }
+      ]
+    }
