@@ -15,8 +15,9 @@ spec:
       - key: app.kubernetes.io/component
         operator: NotIn
         values: [gateway]
-      - key: service.kubernetes.io/headless
-        operator: DoesNotExist
+      - key: prometheus.io/service-monitor
+        operator: NotIn
+        values: ["false"]
   endpoints:
     - port: http-metrics
       interval: 30s
