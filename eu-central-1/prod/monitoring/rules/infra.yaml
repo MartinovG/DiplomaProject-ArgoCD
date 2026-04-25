@@ -53,7 +53,7 @@ spec:
             description: "Prometheus is failing to evaluate {{ $value }} rules per second — alerts/recording rules may be missing data."
 
         - alert: PrometheusNotIngestingSamples
-          expr: rate(prometheus_tsdb_head_samples_appended_total[5m]) == 0
+          expr: sum by (namespace, pod) (rate(prometheus_tsdb_head_samples_appended_total[5m])) == 0
           for: 10m
           labels:
             severity: critical
@@ -107,13 +107,22 @@ spec:
             description: "Loki is returning 5xx responses for {{ $labels.route }} — log ingest or query may be broken."
 
         - alert: LokiDown
-          expr: up{job=~".*loki.*"} == 0
+          expr: up{job="gm-diploma-project-loki"} == 0
           for: 5m
           labels:
             severity: critical
           annotations:
             summary: "Loki is down"
             description: "Loki instance {{ $labels.instance }} has been unreachable for 5m — logs will be lost."
+
+        - alert: LokiCanaryDown
+          expr: up{job="loki-canary"} == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Loki canary unreachable on {{ $labels.instance }}"
+            description: "Loki canary can't be scraped on this node — log pipeline health unknown."
 
     - name: external-secrets
       interval: 1m

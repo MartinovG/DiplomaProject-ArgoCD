@@ -11,6 +11,12 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: loki
+    matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: NotIn
+        values: [gateway]
+      - key: service.kubernetes.io/headless
+        operator: DoesNotExist
   endpoints:
     - port: http-metrics
       interval: 30s
