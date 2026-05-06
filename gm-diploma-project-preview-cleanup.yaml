@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-preview-cleanup
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/finalizer
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
+    targetRevision: main
+    path: eu-central-1/preview/cleanup
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
