@@ -56,6 +56,8 @@ app:
               key: password
         - name: DATABASE_URL
           value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+        - name: AUTO_SLEEP_ENABLED
+          value: "true"
 
     frontend:
       livenessProbePath: "/api/health"
