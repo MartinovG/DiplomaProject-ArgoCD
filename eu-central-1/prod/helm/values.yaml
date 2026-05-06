@@ -23,7 +23,7 @@ app:
       containerPort: 4000
       image:
         repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-api
-        tag: backend-sha-1991a96beae93479e79a474324c0046ceb41f161
+        tag: backend-sha-f1ce79391d4eadb519029a2d9a8432193159bdf3
         pullPolicy: Always
       service:
         port: 4000
@@ -66,7 +66,7 @@ app:
       containerPort: 3000
       image:
         repository: 787587782604.dkr.ecr.eu-central-1.amazonaws.com/gm-diploma-project-ecr-frontend
-        tag: frontend-sha-1991a96beae93479e79a474324c0046ceb41f161
+        tag: frontend-sha-f1ce79391d4eadb519029a2d9a8432193159bdf3
         pullPolicy: Always
       service:
         port: 80
