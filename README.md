@@ -7,7 +7,7 @@ This is the GitOps source of truth for my diploma project. Everything that runs 
 | Repo | What lives there |
 |------|------------------|
 | [`DiplomaProject-Terraform`](../DiplomaProject-Terraform) | EKS cluster, VPC, IAM/IRSA, ECR, ACM, RDS subnet group, ArgoCD itself (Helm release), AWS Secrets Manager containers |
-| [`DiplomaProject-App`](../DiplomaProject-App) | Node.js/TypeScript backend (Express + Prisma) and Next.js frontend |
+| [`DiplomaProject-App`](../DiplomaProject-App) | Node.js/TypeScript backend (Express + Kubernetes client) and Next.js frontend |
 | **`DiplomaProject-ArgoCD`** *(this one)* | Everything Kubernetes — apps, monitoring, observability, autoscaling, secrets wiring |
 
 The split is deliberate: Terraform owns AWS, ArgoCD owns Kubernetes, and the apps own their own code. Bootstrapping is one-way: `terraform apply` creates the cluster and installs ArgoCD; ArgoCD then picks up everything in this repo.
@@ -22,7 +22,7 @@ eu-central-1 EKS
 ├── karpenter                 node autoscaling, spot + on-demand
 ├── kube-system               ALB controller, EBS CSI, RDS ACK
 └── gm-diploma-project-prod   the actual app
-    ├── backend  (Node 20, Express, Prisma → RDS Postgres)
+    ├── backend  (Node 20, Express, talks to the Kubernetes API)
     └── frontend (Next.js)
 ```
 
@@ -101,11 +101,11 @@ kubectl delete namespace alert-test
 
 Production runs in `gm-diploma-project-prod`:
 
-- **backend**: 2 replicas (HPA min 2, max 10, target 50% CPU), pinned to a SHA tag, talks to the RDS instance over the private VPC.
+- **backend**: 2 replicas (HPA min 2, max 10, target 50% CPU), pinned to a SHA tag, uses the in-cluster Kubernetes API (via its ServiceAccount) to list namespaces and deployments for the dashboard.
 - **frontend**: 2 replicas (HPA min 2, max 5, target 80% CPU), Next.js standalone, talks to backend via `/api`.
 - Behind an AWS ALB, hostname `gmdiplomaproject.elsys.itgix.eu`, TLS terminated by ACM.
 
-DB credentials come from the Kubernetes secret `gm-diploma-prod-db-secret` (managed by RDS ACK controller alongside the RDS instance itself).
+An RDS Postgres instance (provisioned via the ACK controller in `eu-central-1/prod/databases/`) and its `gm-diploma-prod-db-secret` exist as scaffolding for future persistence work — the current backend does not use them.
 
 ## PR preview environments
 

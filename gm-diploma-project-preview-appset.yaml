@@ -41,10 +41,10 @@ spec:
               value: "pr-{{.number}}"
             
             - name: "app.apps.backend.image.tag"
-              value: "backend-pr-{{.number}}"
-            
+              value: "backend-pr-{{.number}}-{{.head_short_sha}}"
+
             - name: "app.apps.frontend.image.tag"
-              value: "frontend-pr-{{.number}}"
+              value: "frontend-pr-{{.number}}-{{.head_short_sha}}"
             
             - name: "app.global.corsOrigin"
               value: "https://pr-{{.number}}.elsys.itgix.eu"

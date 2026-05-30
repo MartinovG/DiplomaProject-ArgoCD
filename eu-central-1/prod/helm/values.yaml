@@ -6,6 +6,7 @@ app:
     name: gm-diploma-project
     namespace: gm-diploma-project-prod
     serviceAccountName: gm-diploma-project-sa
+    corsOrigin: "https://gmdiplomaproject.elsys.itgix.eu"
     ingress:
       enabled: true
       className: alb
