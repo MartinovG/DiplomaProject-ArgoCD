@@ -72,6 +72,7 @@ No secret values live in this repo. They are stored in AWS Secrets Manager and p
 | `gm-diploma-project/grafana-admin` | Grafana login (`username`, `password`) |
 | `gm-diploma-project/alertmanager-config` | Discord webhook URL (`webhook-url`) |
 | `gm-diploma-project/preview-db` | ephemeral Postgres password for PR previews (`password`) |
+| `gm-diploma-project/github-token` | GitHub PAT (`token`) — read by the preview ApplicationSet's `pullRequest` generator and by the `preview-cleanup` CronJob to list / poll PR state |
 
 The IAM role `gm-diploma-external-secrets-role` (created in Terraform with `use_name_prefix = false`) is what ESO assumes via IRSA. The trust policy is bound to the `external-secrets:external-secrets` service account.
 
