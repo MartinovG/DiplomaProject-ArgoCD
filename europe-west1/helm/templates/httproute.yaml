@@ -1,0 +1,43 @@
+{{- $gw := .Values.global.gateway | default dict }}
+{{- if $gw.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .Values.global.name }}-route
+  namespace: {{ .Values.global.namespace }}
+spec:
+  parentRefs:
+    - name: shared-gateway
+      namespace: gateway-infra
+  hostnames:
+    - "{{ $gw.hostPrefix }}.{{ $gw.hostnameSuffix }}"
+  rules:
+    {{- range $appName, $appConfig := .Values.apps }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $appConfig.ingressPath }}
+      backendRefs:
+        - name: {{ $appName }}
+          port: {{ $appConfig.service.port }}
+    {{- end }}
+{{- range $appName, $appConfig := .Values.apps }}
+---
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ $appName }}-hc
+  namespace: {{ $.Values.global.namespace }}
+spec:
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ $appName }}
+  default:
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: {{ $appConfig.readinessProbePath | default "/" }}
+        port: {{ $appConfig.containerPort }}
+{{- end }}
+{{- end }}

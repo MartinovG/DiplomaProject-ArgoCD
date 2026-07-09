@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: preview-cleanup
+  namespace: argocd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: preview-cleanup
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: preview-cleanup
+subjects:
+  - kind: ServiceAccount
+    name: preview-cleanup
+    namespace: argocd
+roleRef:
+  kind: ClusterRole
+  name: preview-cleanup
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: stale-preview-namespace-cleanup
+  namespace: argocd
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          serviceAccountName: preview-cleanup
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup
+              image: alpine/k8s:1.34.0
+              env:
+                - name: GITHUB_OWNER
+                  value: MartinovG
+                - name: GITHUB_REPO
+                  value: DiplomaProject-App
+                - name: GITHUB_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: github-token
+                      key: token
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+
+                  echo "Fetching open PRs from $GITHUB_OWNER/$GITHUB_REPO..."
+                  open_prs=$(curl -sfH "Authorization: token $GITHUB_TOKEN" \
+                    "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/pulls?state=open&per_page=100" \
+                    | jq -r '.[].number' | sort -u)
+                  echo "Open PRs:"
+                  echo "$open_prs"
+                  echo
+
+                  pr_namespaces=$(kubectl get ns -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
+                    | grep -E '^pr-[0-9]+$' || true)
+                  echo "Existing pr-* namespaces:"
+                  echo "$pr_namespaces"
+                  echo
+
+                  for ns in $pr_namespaces; do
+                    pr_num=${ns#pr-}
+                    if echo "$open_prs" | grep -qx "$pr_num"; then
+                      echo "Keeping $ns (PR #$pr_num is open)"
+                    else
+                      echo "Deleting $ns (PR #$pr_num is closed or missing)"
+                      kubectl delete ns "$ns" --ignore-not-found=true --wait=false
+                    fi
+                  done
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "128Mi"
