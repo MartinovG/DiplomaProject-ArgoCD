@@ -1,0 +1,30 @@
+{{- if .Values.global.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.global.name }}-ingress
+  namespace: {{ .Values.global.namespace | default "default" }}
+    {{- with .Values.global.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.global.ingress.className }}
+  ingressClassName: {{ .Values.global.ingress.className }}
+  {{- end }}
+  rules:
+    - http:
+        paths:
+          {{- range $appName, $appConfig := .Values.apps }}
+          - path: {{ $appConfig.ingressPath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ $appName }}
+                port:
+                  number: {{ $appConfig.service.port }}
+          {{- end }}
+      {{- with .Values.global.ingress.host }}
+      host: {{ . }}
+      {{- end }}
+{{- end }}

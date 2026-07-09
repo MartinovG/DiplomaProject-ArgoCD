@@ -1,0 +1,86 @@
+app: 
+  postgres:
+    enabled: true
+    dbName: gmdiplomaprojectdb
+    password: "password123"
+
+  global:
+    name: gm-diploma-project
+    namespace: gm-diploma-project-prod
+    serviceAccountName: gm-diploma-project-sa
+    ingress:
+      enabled: true
+      className: ""
+      host: ""
+      annotations:
+        kubernetes.io/ingress.class: gce
+
+  apps:
+    backend:
+      livenessProbePath: "/api/health"
+      readinessProbePath: "/api/health"
+      replicaCount: 2
+      containerPort: 4000
+      image:
+        repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project
+        tag: backend
+        pullPolicy: Always
+      service:
+        port: 4000
+      ingressPath: /api
+      autoscaling:
+        enabled: true
+        minReplicas: 2
+        maxReplicas: 4
+        targetCPUUtilizationPercentage: 50
+      resources: 
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+      env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "gmdiplomaprojectdb"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        - name: DATABASE_URL
+          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+
+    frontend:
+      livenessProbePath: "/api/health"
+      readinessProbePath: "/api/health"
+      replicaCount: 2
+      containerPort: 3000
+      image:
+        repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project
+        tag: frontend
+        pullPolicy: Always
+      service:
+        port: 80
+      ingressPath: /
+      autoscaling:
+        enabled: true 
+        minReplicas: 2
+        maxReplicas: 3
+        targetCPUUtilizationPercentage: 80
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "512Mi"
+      env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "/api"

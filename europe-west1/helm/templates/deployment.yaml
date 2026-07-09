@@ -1,0 +1,56 @@
+{{- range $appName, $appConfig := .Values.apps }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $appName }}
+  namespace: {{ $.Values.global.namespace | default "default" }}
+  labels:
+    app: {{ $appName }}
+spec:
+  {{- if not $appConfig.autoscaling.enabled }}
+  replicas: {{ $appConfig.replicaCount | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ $appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $appName }}
+    spec:
+      serviceAccountName: {{ $.Values.global.serviceAccountName }}
+      containers:
+        - name: app
+          image: "{{ $appConfig.image.repository }}:{{ $appConfig.image.tag }}"
+          imagePullPolicy: {{ $appConfig.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - containerPort: {{ $appConfig.containerPort }}
+          env:
+            {{- with $appConfig.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- if $.Values.global.corsOrigin }}
+            - name: CORS_ORIGIN
+              value: {{ $.Values.global.corsOrigin | quote }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ $appConfig.livenessProbePath | default "/" }}
+              port: {{ $appConfig.containerPort }}
+            initialDelaySeconds: {{ $appConfig.livenessProbeInitialDelay | default 15 }}
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ $appConfig.readinessProbePath | default "/" }}
+              port: {{ $appConfig.containerPort }}
+            initialDelaySeconds: {{ $appConfig.readinessProbeInitialDelay | default 5 }}
+            periodSeconds: 10
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            {{- toYaml ($appConfig.resources | default dict) | nindent 12 }}
+{{- end }}
