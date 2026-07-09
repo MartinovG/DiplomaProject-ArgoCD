@@ -10,7 +10,7 @@ metadata:
   namespace: gateway-infra
 spec:
   gatewayClassName: gke-l7-global-external-managed
-  address:
+  addresses:
     - type: NameAddress
       value: gm-dp-gateway-ip
   listeners:
