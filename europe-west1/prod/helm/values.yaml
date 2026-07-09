@@ -23,7 +23,7 @@ app:
       containerPort: 4000
       image:
         repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project/backend
-        tag: backend-manual-1
+        tag: backend-sha-83dcf8e3361f40f43cb4a763bdb6798909e59245
         pullPolicy: Always
       service:
         port: 4000
@@ -64,7 +64,7 @@ app:
       containerPort: 3000
       image:
         repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project/frontend
-        tag: frontend-manual-1
+        tag: frontend-sha-c43c4eba6f7212855fd950a89dadf9e02ba9aa51
         pullPolicy: Always
       service:
         port: 80
