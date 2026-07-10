@@ -22,7 +22,7 @@ app:
       replicaCount: 2
       containerPort: 4000
       image:
-        repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project/backend
+        repository: europe-west1-docker.pkg.dev/playground-s-11-30ab0ff2/gm-diploma-project/backend
         tag: backend-sha-19f7941607958db6286202f8e4e2db11b023ef5a
         pullPolicy: Always
       service:
@@ -63,7 +63,7 @@ app:
       replicaCount: 2
       containerPort: 3000
       image:
-        repository: europe-west1-docker.pkg.dev/playground-s-11-fc8b3fbb/gm-diploma-project/frontend
+        repository: europe-west1-docker.pkg.dev/playground-s-11-30ab0ff2/gm-diploma-project/frontend
         tag: frontend-sha-19f7941607958db6286202f8e4e2db11b023ef5a
         pullPolicy: Always
       service:
