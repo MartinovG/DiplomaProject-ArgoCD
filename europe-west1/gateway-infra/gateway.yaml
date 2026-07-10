@@ -11,7 +11,7 @@ metadata:
 spec:
   gatewayClassName: gke-l7-global-external-managed
   addresses:
-    - type: NameAddress
+    - type: NamedAddress
       value: gm-dp-gateway-ip
   listeners:
     - name: http
