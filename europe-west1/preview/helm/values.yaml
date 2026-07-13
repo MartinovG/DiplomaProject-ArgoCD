@@ -13,7 +13,7 @@ app:
       
     gateway:
       enabled: true
-      hostnameSuffix: "136-68-29-217.sslip.io"
+      hostnameSuffix: "136-68-21-205.sslip.io"
       hostPrefix: "preview"
 
   apps:
@@ -23,7 +23,7 @@ app:
       replicaCount: 1 
       containerPort: 4000
       image:
-        repository: europe-west1-docker.pkg.dev/playground-s-11-8ef2326d/gm-diploma-project/backend
+        repository: europe-west1-docker.pkg.dev/playground-s-11-7655b4b5/gm-diploma-project/backend
         tag: latest 
         pullPolicy: Always
       service:
@@ -64,7 +64,7 @@ app:
       replicaCount: 1
       containerPort: 3000
       image:
-        repository: europe-west1-docker.pkg.dev/playground-s-11-8ef2326d/gm-diploma-project/frontend
+        repository: europe-west1-docker.pkg.dev/playground-s-11-7655b4b5/gm-diploma-project/frontend
         tag: latest 
         pullPolicy: Always
       service:
