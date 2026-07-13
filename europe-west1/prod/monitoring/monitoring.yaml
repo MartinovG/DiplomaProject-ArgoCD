@@ -1,105 +1,66 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: kube-prometheus-stack
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io/finalizer
 spec:
   project: default
   source:
-    repoURL: "https://prometheus-community.github.io/helm-charts"
+    repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: "80.4.2"
+    targetRevision: "70.4.1"
     helm:
-      values: |
-        prometheusOperator:
-          admissionWebhooks:
-            enabled: false
-          tls:
-            enabled: false
-        grafana:
-          admin:
-            existingSecret: grafana-admin-secret
-            userKey: admin-user
-            passwordKey: admin-password
-          grafana.ini:
-            dashboards:
-              default_home_dashboard_path: /tmp/dashboards/app-overview.json
-          additionalDataSources:
-            - name: Loki
-              type: loki
-              uid: loki-ds-01
-              url: http://gm-diploma-project-loki-gateway.monitoring.svc.cluster.local
-              access: proxy
-              isDefault: false
-              jsonData:
-                maxLines: 1000
-                httpHeaderName1: "X-Scope-OrgID"
-                derivedFields:
-                  - datasourceUid: tempo-ds-01
-                    matcherRegex: "traceID=(\\w+)"
-                    name: TraceID
-                    url: "$${__value.raw}"
-              secureJsonData:
-                httpHeaderValue1: "fake"
-            - name: Tempo
-              type: tempo
-              uid: tempo-ds-01
-              url: http://gm-diploma-project-tempo.monitoring.svc.cluster.local:3100
-              access: proxy
-              isDefault: false
-              jsonData:
-                tracesToLogsV2:
-                  datasourceUid: loki-ds-01
-                  filterByTraceID: true
-                lokiSearch:
-                  datasourceUid: loki-ds-01
-          ingress:
-            enabled: true
-            ingressClassName: alb
-            hosts: ["grafana-gmdiplomaproject.elsys.itgix.eu"]
-            annotations:
-              alb.ingress.kubernetes.io/scheme: internet-facing
-              alb.ingress.kubernetes.io/target-type: ip
-              alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
-              alb.ingress.kubernetes.io/ssl-redirect: "443"
-          persistence:
-            enabled: true
-            size: 10Gi
-
+      releaseName: monitoring
+      valuesObject:
         prometheus:
           prometheusSpec:
-            retention: 30d
-            storageSpec:
-              volumeClaimTemplate:
-                spec:
-                  accessModes: ["ReadWriteOnce"]
-                  resources:
-                    requests:
-                      storage: 20Gi
-
-        kubeControllerManager:
-          enabled: false
-        kubeScheduler:
-          enabled: false
-        kubeProxy:
-          enabled: false
-
+            retention: 6h
+            replicas: 1
+            resources:
+              requests: { cpu: 200m, memory: 512Mi }
+              limits: { cpu: "1", memory: 1Gi }
+        grafana:
+          adminPassword: sandbox-admin
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { cpu: 200m, memory: 256Mi }
+          ingress:
+            enabled: true
+            annotations:
+              kubernetes.io/ingress.class: gce
+            hosts: []
+            path: /
+            pathType: Prefix
         alertmanager:
-          alertmanagerSpec:
-            configSecret: alertmanager-config
-            secrets:
-              - alertmanager-discord-webhook
-      
+          enabled: false
+        additionalPrometheusRulesMap:
+          gm-diploma-demo:
+            groups:
+              - name: gm-diploma-project
+                rules:
+                  - alert: PodCrashLooping
+                    expr: rate(kube_pod_container_status_restarts_total[5m]) > 0
+                    for: 5m
+                    labels:
+                      severity: warning
+                    annotations:
+                      summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} рестартира често"
+                  - alert: PreviewNamespaceHighCPU
+                    expr: sum(rate(container_cpu_usage_seconds_total{namespace=~"pr-.*"}[5m])) by (namespace) > 0.8
+                    for: 10m
+                    labels:
+                      severity: info
+                    annotations:
+                      summary: "Preview {{ $labels.namespace }} гори CPU"
   destination:
-    server: 'https://kubernetes.default.svc'
+    server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-      - SkipSchemaValidation=true
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
