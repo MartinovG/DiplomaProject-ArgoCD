@@ -1,0 +1,91 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-health
+  namespace: monitoring
+  labels:
+    release: monitoring
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: pod-health
+      interval: 30s
+      rules:
+        - alert: PodCrashLooping
+          expr: |
+            increase(kube_pod_container_status_restarts_total[10m]) > 3
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is crash looping"
+            description: "Container {{ $labels.container }} has restarted {{ $value }} times in the last 10 minutes."
+
+        - alert: PodRestartingTooOften
+          expr: |
+            rate(kube_pod_container_status_restarts_total[15m]) * 60 * 15 > 2
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} restarting frequently"
+            description: "Container {{ $labels.container }} restart rate indicates it will restart more than 2 times every 15 minutes."
+
+        - alert: PodNotReady
+          expr: |
+            sum by (namespace, pod) (
+              max by (namespace, pod) (
+                kube_pod_status_phase{phase=~"Pending|Unknown"}
+              ) * on (namespace, pod) group_left (owner_kind) topk by (namespace, pod) (
+                1, max by (namespace, pod, owner_kind) (kube_pod_owner{owner_kind!="Job"})
+              )
+            ) > 0
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} not ready"
+            description: "Pod has been in a non-ready state (Pending or Unknown) for more than 15 minutes."
+
+        - alert: PodContainerWaiting
+          expr: |
+            sum by (namespace, pod, container, reason) (
+              kube_pod_container_status_waiting_reason{reason!="ContainerCreating", reason!="PodInitializing"}
+            ) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} waiting in {{ $labels.namespace }}/{{ $labels.pod }}"
+            description: "Container has been stuck waiting (reason: {{ $labels.reason }}) for 10m."
+
+        - alert: PodOOMKilled
+          expr: |
+            kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Container {{ $labels.container }} in {{ $labels.namespace }}/{{ $labels.pod }} was OOMKilled"
+            description: "Container was terminated due to out-of-memory. Review memory limits."
+
+        - alert: DeploymentGenerationMismatch
+          expr: |
+            kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} rollout stalled"
+            description: "Deployment generation mismatch — rollout has not progressed for 15m."
+
+        - alert: StatefulSetReplicasMismatch
+          expr: |
+            kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "StatefulSet {{ $labels.namespace }}/{{ $labels.statefulset }} replicas mismatch"
+            description: "StatefulSet has not reached its desired replica count for 15m."
