@@ -1,7 +1,7 @@
 app:
   postgres:
     enabled: true
-    password: "password123"
+    secretManagerKey: "gm-preview-db-password"
 
   global:
     name: gm-diploma-project

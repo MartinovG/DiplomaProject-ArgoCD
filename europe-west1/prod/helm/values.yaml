@@ -2,7 +2,7 @@ app:
   postgres:
     enabled: true
     dbName: gmdiplomaprojectdb
-    password: "password123"
+    secretManagerKey: "gm-prod-db-password"
 
   global:
     name: gm-diploma-project

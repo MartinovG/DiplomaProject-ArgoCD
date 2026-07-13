@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gm-diploma-project-eso
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/finalizer
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/MartinovG/DiplomaProject-ArgoCD.git'
+    targetRevision: gcp
+    path: europe-west1/prod/eso
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff: {duration: 10s, factor: 2}
