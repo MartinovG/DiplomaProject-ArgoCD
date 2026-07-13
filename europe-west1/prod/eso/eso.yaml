@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/finalizer
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: "2.7.0"
+    helm:
+      releaseName: external-secrets
+      valuesObject:
+        installCRDs: true
+        serviceAccount:
+          create: true
+          name: external-secrets
+          annotations:
+            iam.gke.io/gcp-service-account: external-secrets@playground-s-11-30ab0ff2.iam.gserviceaccount.com
+        resources:
+          requests: { cpu: 50m, memory: 64Mi }
+          limits: { cpu: 200m, memory: 256Mi }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: external-secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
