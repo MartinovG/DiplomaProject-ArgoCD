@@ -1,0 +1,49 @@
+# europe-west1/prod/monitoring/grafana-admin-external-secret.yaml
+# (нов файл в СЪЩАТА папка — root monitoring app-ът го хваща сам)
+#
+# Явен Namespace, за да няма race: ExternalSecret-ът има нужда от
+# ns monitoring ПРЕДИ child app-ът (kps) да го е създал.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: grafana-admin
+  namespace: monitoring
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    kind: ClusterSecretStore
+    name: gcp-secrets-manager
+  target:
+    name: grafana-admin
+    template:
+      data:
+        admin-user: admin                  # статичен
+        admin-password: "{{ .password }}"  # от Secret Manager
+  data:
+    - secretKey: password
+      remoteRef:
+        key: grafana-admin-password
+
+# ═══════════════════════════════════════════════════════════════
+# DIFF за europe-west1/prod/monitoring/monitoring.yaml
+# (grafana секцията — паролата излиза от values завинаги):
+#
+#         grafana:
+# -         adminPassword: sandbox-admin
+# +         admin:
+# +           existingSecret: grafana-admin
+# +           userKey: admin-user
+# +           passwordKey: admin-password
+#           resources:
+#             ...остава същото...
+# ═══════════════════════════════════════════════════════════════

@@ -21,13 +21,13 @@ spec:
           create: true
           name: external-secrets
           annotations:
-            iam.gke.io/gcp-service-account: external-secrets@playground-s-11-30ab0ff2.iam.gserviceaccount.com
+            iam.gke.io/gcp-service-account: external-secrets@playground-s-11-7655b4b5.iam.gserviceaccount.com
         resources:
           requests: { cpu: 50m, memory: 64Mi }
           limits: { cpu: 200m, memory: 256Mi }
   destination:
     server: https://kubernetes.default.svc
-    namespace: external-secrets
+    namespace: eso
   syncPolicy:
     automated:
       prune: true
