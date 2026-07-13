@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/MartinovG/DiplomaProject-ArgoCD.git
-    targetRevision: main
+    targetRevision: gcp
     path: europe-west1/prod/monitoring
     directory:
       recurse: true
